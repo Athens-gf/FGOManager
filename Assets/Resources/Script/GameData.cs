@@ -15,7 +15,6 @@ namespace FGOManager
 
 		private void Start()
 		{
-			Debug.Log((int)CommandCard.Type_e.Q2A2B1);
 		}
 	}
 
