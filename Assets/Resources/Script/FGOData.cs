@@ -8,52 +8,59 @@ namespace FGOManager
 	public enum Class_e
 	{
 		[EnumText("セイバー")]
-		Saber,
+		Saber = 0,
 		[EnumText("アーチャー")]
-		Archer,
+		Archer = 1,
 		[EnumText("ランサー")]
-		Lancer,
+		Lancer = 2,
 		[EnumText("ライダー")]
-		Rider,
+		Rider = 3,
 		[EnumText("キャスター")]
-		Caster,
+		Caster = 4,
 		[EnumText("アサシン")]
-		Assassin,
+		Assassin = 5,
 		[EnumText("バーサーカー")]
-		Berserker,
+		Berserker = 6,
 		[EnumText("シールダー")]
-		Shielder,
+		Shielder = 7,
 		[EnumText("ルーラー")]
-		Ruler,
+		Ruler = 8,
 		[EnumText("アヴェンジャー")]
-		Avenger,
+		Avenger = 9,
 		[EnumText("ムーンキャンサー")]
-		MoonCancer,
+		MoonCancer = 10,
 		[EnumText("アルターエゴ")]
-		Alterego,
+		Alterego = 11,
 		[EnumText("フォーリナー")]
-		Foreigner,
+		Foreigner = 12,
+
+		[EnumText("ビーストⅠ")]
+		Beast1 = 13,
+		[EnumText("ビーストⅡ")]
+		Beast2 = 14,
+		[EnumText("ビーストⅢ")]
+		Beast3 = 15,
 	}
 
 	/// <summary> コマンドカード列挙体 </summary>
 	public enum CommandCard_e
 	{
-		Quick = 1,
-		Arts = 1 << 1,
-		Buster = 1 << 2,
+		[EnumText("Q")] Quick = 1,
+		[EnumText("A")] Arts = 1 << 1,
+		[EnumText("B")] Buster = 1 << 2,
 
-		Extra = 1 << 3,
-		NoblePhantasm = 1 << 4,
+		[EnumText("Ex")] Extra = 1 << 3,
+		[EnumText("宝具")] NoblePhantasm = 1 << 4,
 	}
 
 	/// <summary> 天地人相性列挙体 </summary>
-	public enum Compatibility_e
+	public enum Attributes_e
 	{
-		[EnumText("天")] Heaven,
-		[EnumText("地")] Earth,
-		[EnumText("人")] Man,
-		[EnumText("星")] Star,
-		[EnumText("獣")] Beast,
+		[EnumText("天")] Heaven = 0,
+		[EnumText("地")] Earth = 1,
+		[EnumText("人")] Man = 2,
+		[EnumText("星")] Star = 3,
+		[EnumText("獣")] Beast = 4,
 	}
 
 	/// <summary> 性別列挙体 </summary>
@@ -75,12 +82,12 @@ namespace FGOManager
 	/// <summary> 成長タイプ列挙体 </summary>
 	public enum StatusTrend_e
 	{
-		HP_Heavy = 2,
-		HP = 1,
-		Balance = 0,
-		ATK = -1,
-		ATK_Heavy = -2,
-		Altria_Lily = 10,
+		[EnumText("アルトリア〔リリィ〕")] Altria_Lily = 10,
+		[EnumText("HP偏重")] HP_Heavy = 2,
+		[EnumText("HP寄り")] HP = 1,
+		[EnumText("バランス")] Balance = 0,
+		[EnumText("ATK寄り")] ATK = -1,
+		[EnumText("ATK偏重")] ATK_Heavy = -2,
 	}
 
 	#endregion
@@ -91,13 +98,13 @@ namespace FGOManager
 	{
 		public enum Type_e
 		{
-			[EnumText("EX")] EX = 2,
-			[EnumText("A")] A = 1,
-			[EnumText("B")] B = 0,
-			[EnumText("C")] C = -1,
-			[EnumText("D")] D = -2,
-			[EnumText("E")] E = -3,
-			[EnumText("Other")] Other = -100,
+			EX = 2,
+			A = 1,
+			B = 0,
+			C = -1,
+			D = -2,
+			E = -3,
+			Other = -100,
 		}
 
 		/// <summary>  </summary>
@@ -175,6 +182,8 @@ namespace FGOManager
 			[EnumText("魔石")] Manastone = 1011,
 			[EnumText("秘石")] SecretStone = 1012,
 
+			[EnumText("伝承結晶")] TraditionalCrystal = 1020,
+
 			// 配布キャラ再臨素材
 			[EnumText("配布再臨素材")] DistributionMaterial = 2000,
 		}
@@ -212,7 +221,87 @@ namespace FGOManager
 
 	public static class FGOData
 	{
-		/// <summary> クラス毎の短縮漢字名を取得する </summary>
+		/// <summary> コマンドカードの攻撃力補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <param name="_order">何番目か(1番目は1)</param>
+		/// <returns>補正値</returns>
+		public static decimal GetCorAtk(this CommandCard_e _type, byte _order = 1)
+		{
+			switch (_type)
+			{
+				case CommandCard_e.Quick:
+					return 0.8m + (_order - 1) * 0.16m;
+				case CommandCard_e.Arts:
+					return 1 + (_order - 1) * 0.2m;
+				case CommandCard_e.Buster:
+					return 1.5m + (_order - 1) * 0.3m;
+				case CommandCard_e.Extra:
+					return 1;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary> コマンドカードのNP補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <param name="_order">何番目か(1番目は1)</param>
+		/// <returns>補正値</returns>
+		public static decimal GetCorNP(this CommandCard_e _type, byte _order = 1)
+		{
+			switch (_type)
+			{
+				case CommandCard_e.Quick:
+					return 1 + (_order - 1) * 0.5m;
+				case CommandCard_e.Arts:
+					return 3 + (_order - 1) * 1.5m;
+				case CommandCard_e.Buster:
+					return 0;
+				case CommandCard_e.Extra:
+					return 1;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary> コマンドカードのStar発生補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <param name="_order">何番目か(1番目は1)</param>
+		/// <returns>補正値</returns>
+		public static decimal GetCorStar(this CommandCard_e _type, byte _order = 1)
+		{
+			switch (_type)
+			{
+				case CommandCard_e.Quick:
+					return 0.8m + (_order - 1) * 0.5m;
+				case CommandCard_e.Arts:
+					return 0;
+				case CommandCard_e.Buster:
+					return 0.1m + (_order - 1) * 0.05m;
+				case CommandCard_e.Extra:
+					return 1;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary> コマンドカードの攻撃力1st補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <returns>補正値</returns>
+		public static decimal GetFirstCorAtk(this CommandCard_e _type) => (_type == CommandCard_e.Buster) ? 0.5m : 0;
+
+		/// <summary> コマンドカードのNP1st補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <returns>補正値</returns>
+		public static decimal GetFirstCorNP(this CommandCard_e _type) => (_type == CommandCard_e.Arts) ? 1 : 0;
+
+		/// <summary> コマンドカードのStar1st補正値を取得 </summary>
+		/// <param name="_type">カード種別</param>
+		/// <returns>補正値</returns>
+		public static decimal GetFirstCorStar(this CommandCard_e _type) => (_type == CommandCard_e.Quick) ? 0.2m : 0;
+
+		public static decimal GetExtraBonus(bool _isCardMatch) => _isCardMatch ? 3.5m : 2;
+
+		/// <summary> クラス毎の短縮漢字名を取得 </summary>
 		/// <param name="_class">クラス</param>
 		/// <returns>クラス毎の短縮漢字名</returns>
 		public static string GetShortName(this Class_e _class)
@@ -245,9 +334,76 @@ namespace FGOManager
 					return "分";
 				case Class_e.Foreigner:
 					return "降";
+				case Class_e.Beast1:
+					return "獣Ⅰ";
+				case Class_e.Beast2:
+					return "獣Ⅱ";
+				case Class_e.Beast3:
+					return "獣Ⅲ";
 				default:
 					return "";
 			}
+		}
+
+		/// <summary> クラスの攻撃力補正値を取得 </summary>
+		/// <param name="_class">クラス</param>
+		/// <returns>攻撃力補正値</returns>
+		public static decimal GetCorAtk(this Class_e _class)
+		{
+			switch (_class)
+			{
+				case Class_e.Archer:
+					return 0.95m;
+				case Class_e.Lancer:
+					return 1.05m;
+				case Class_e.Caster:
+				case Class_e.Assassin:
+					return 0.9m;
+				case Class_e.Berserker:
+				case Class_e.Ruler:
+				case Class_e.Avenger:
+					return 1.1m;
+				default:
+					return 1;
+			}
+		}
+
+		/// <summary> クラス間相性補正値を取得する </summary>
+		/// <param name="_classAtk">攻撃側クラス</param>
+		/// <param name="_classDef">防御側クラス</param>
+		/// <returns>クラス間相性補正値</returns>
+		public static decimal GetCorConflict(this Class_e _classAtk, Class_e _classDef) => GameData.Instance.CorConflictDic[_classAtk][_classDef];
+
+		/// <summary> 天地人間相性補正値を取得する </summary>
+		/// <param name="_attriAtk">攻撃側天地人</param>
+		/// <param name="_attriDef">防御側天地人</param>
+		/// <returns>天地人間相性補正値</returns>
+		public static decimal GetCorConflict(this Attributes_e _attriAtk, Attributes_e _attriDef)
+		{
+			switch (_attriAtk)
+			{
+				case Attributes_e.Heaven:
+					if (_attriDef == Attributes_e.Earth) return 1.1m;
+					if (_attriDef == Attributes_e.Man) return 0.9m;
+					break;
+				case Attributes_e.Earth:
+					if (_attriDef == Attributes_e.Man) return 1.1m;
+					if (_attriDef == Attributes_e.Heaven) return 0.9m;
+					break;
+				case Attributes_e.Man:
+					if (_attriDef == Attributes_e.Heaven) return 1.1m;
+					if (_attriDef == Attributes_e.Earth) return 0.9m;
+					break;
+				case Attributes_e.Star:
+					if (_attriDef == Attributes_e.Beast) return 1.1m;
+					break;
+				case Attributes_e.Beast:
+					if (_attriDef == Attributes_e.Star) return 1.1m;
+					break;
+				default:
+					break;
+			}
+			return 1;
 		}
 	}
 }
