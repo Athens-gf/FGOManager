@@ -32,10 +32,12 @@ namespace KMUtility.Unity.UI
 		[SerializeField]
 		private Shadow m_Shadow = null;
 
-		[SerializeField]
-		private Navi_ic m_Navi = new Navi_ic();
 
-		public Navi_ic Navi { get { return m_Navi; } }
+		[UnityEngine.Serialization.FormerlySerializedAs("m_Navi")]
+		[SerializeField]
+		private Navi_ic m_Navigation = new Navi_ic();
+
+		public Navi_ic Navigation { get { return m_Navigation; } }
 
 		public virtual bool IsSelectet { get { return true; } }
 
@@ -53,6 +55,7 @@ namespace KMUtility.Unity.UI
 					EventSystem.current.SetSelectedGameObject(gameObject);
 			}
 		}
+		//		EventSystem.current.SetSelectedGameObject(gameObject);
 
 		/// <summary> UIManager </summary>
 		public CustomUIManager UIManager { get; set; }
@@ -79,7 +82,7 @@ namespace KMUtility.Unity.UI
 			Trigger.triggers.Add(entry);
 
 			var navi = UIObject.navigation;
-			navi.mode = Navigation.Mode.Explicit;
+			navi.mode = UnityEngine.UI.Navigation.Mode.Explicit;
 			navi.selectOnUp = navi.selectOnDown = navi.selectOnLeft = navi.selectOnRight = null;
 			UIObject.navigation = navi;
 		}
@@ -97,19 +100,19 @@ namespace KMUtility.Unity.UI
 		protected virtual void OnUpdateSelected()
 		{
 			if (!UIObject) return;
-			if (Input.GetKeyDown(KeyCode.UpArrow) && Navi.SelectOnUp)
-				Navi.SelectOnUp.IsSelect = true;
-			if (Input.GetKeyDown(KeyCode.DownArrow) && Navi.SelectOnDown)
-				Navi.SelectOnDown.IsSelect = true;
-			if (Input.GetKeyDown(KeyCode.LeftArrow) && Navi.SelectOnLeft)
-				Navi.SelectOnLeft.IsSelect = true;
-			if (Input.GetKeyDown(KeyCode.RightArrow) && Navi.SelectOnRight)
-				Navi.SelectOnRight.IsSelect = true;
-			if (!Navi.IsUseTab) return;
-			if ((KeySet.Shift + KeyCode.Tab).GetKeyDown() && Navi.Back)
-				Navi.Back.IsSelect = true;
-			else if (Input.GetKeyDown(KeyCode.Tab) && Navi.Next)
-				Navi.Next.IsSelect = true;
+			if (Input.GetKeyDown(KeyCode.UpArrow) && Navigation.SelectOnUp)
+				Navigation.SelectOnUp.IsSelect = true;
+			if (Input.GetKeyDown(KeyCode.DownArrow) && Navigation.SelectOnDown)
+				Navigation.SelectOnDown.IsSelect = true;
+			if (Input.GetKeyDown(KeyCode.LeftArrow) && Navigation.SelectOnLeft)
+				Navigation.SelectOnLeft.IsSelect = true;
+			if (Input.GetKeyDown(KeyCode.RightArrow) && Navigation.SelectOnRight)
+				Navigation.SelectOnRight.IsSelect = true;
+			if (!Navigation.IsUseTab) return;
+			if ((KeySet.Shift + KeyCode.Tab).GetKeyDown() && Navigation.Back)
+				Navigation.Back.IsSelect = true;
+			else if (Input.GetKeyDown(KeyCode.Tab) && Navigation.Next)
+				Navigation.Next.IsSelect = true;
 		}
 	}
 }

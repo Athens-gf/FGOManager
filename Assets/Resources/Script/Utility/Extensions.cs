@@ -40,6 +40,26 @@ namespace KMUtility
 			return list;
 		}
 
+		/// <summary> コンテナから1つ要素を削除したものを返す </summary>
+		/// <returns>追加後のコンテナ</returns>
+		/// <param name="_iter">追加されるコンテナ</param>
+		/// <param name="_t">追加する要素</param>
+		public static IEnumerable<T> ReternRemove<T>(this IEnumerable<T> _iter, T _t)
+		{
+			var list = _iter.ToList(); list.Remove(_t);
+			return list;
+		}
+
+		/// <summary> コンテナから特定の位置の要素を削除したものを返す </summary>
+		/// <returns>追加後のコンテナ</returns>
+		/// <param name="_iter">追加されるコンテナ</param>
+		/// <param name="_t">追加する要素</param>
+		public static IEnumerable<T> ReternRemoveAt<T>(this IEnumerable<T> _iter, int _index)
+		{
+			var list = _iter.ToList(); list.RemoveAt(_index);
+			return list;
+		}
+
 		/// <summary> 2つのコンテナが同じかどうかを返す </summary>
 		public static bool Same<T>(this IEnumerable<T> _iter0, IEnumerable<T> _iter1) => !_iter0.Except(_iter1).Any() && !_iter1.Except(_iter0).Any();
 

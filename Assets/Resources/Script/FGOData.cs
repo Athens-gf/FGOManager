@@ -252,8 +252,7 @@ namespace FGOManager
 	}
 
 	[Serializable]
-	public class MaterialNumber : UnityDictionary<Material_e, int, KV_MaterialNumber> { public MaterialNumber() : base(0) { } }
-
+	public class MaterialNumber : UnityDictionary<Material_e, int, KV_MaterialNumber> { }
 	[Serializable]
 	public class KV_MaterialNumber : KeyAndValue<Material_e, int> { }
 

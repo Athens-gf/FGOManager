@@ -25,9 +25,9 @@ GameObject:
   - component: {fileID: 114414569347065378}
   - component: {fileID: 114840116393186436}
   - component: {fileID: 114203711050230744}
-  - component: {fileID: 114993391591695134}
+  - component: {fileID: 114530345798702800}
   m_Layer: 5
-  m_Name: NodeServantName
+  m_Name: NodeServant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,6 +148,25 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 
+--- !u!114 &114530345798702800
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1380099016145874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab0be664eb31dc45b61b189cbfafbfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Shadow: {fileID: 114840116393186436}
+  m_Navi:
+    IsUseTab: 1
+    TabMove: 1
+    SelectOnUp: {fileID: 0}
+    SelectOnDown: {fileID: 0}
+    SelectOnLeft: {fileID: 0}
+    SelectOnRight: {fileID: 0}
 --- !u!114 &114733813455530692
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -203,25 +222,6 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_EffectDistance: {x: 5, y: -5}
   m_UseGraphicAlpha: 1
---- !u!114 &114993391591695134
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1380099016145874}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69d0d8d80f88f1d4a92efd84401fe740, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Shadow: {fileID: 114840116393186436}
-  m_Navi:
-    IsUseTab: 1
-    TabMove: 1
-    SelectOnUp: {fileID: 0}
-    SelectOnDown: {fileID: 0}
-    SelectOnLeft: {fileID: 0}
-    SelectOnRight: {fileID: 0}
 --- !u!222 &222311894218372378
 CanvasRenderer:
   m_ObjectHideFlags: 1

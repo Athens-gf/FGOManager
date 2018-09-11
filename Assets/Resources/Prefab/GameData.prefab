@@ -51,3 +51,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eae37893b6c64589996033227a68e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ClassSprites:
+    m_Default: {fileID: 0}
+    m_List:
+    - Key: 0
+      Value: {fileID: 21300000, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 1
+      Value: {fileID: 21300002, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 2
+      Value: {fileID: 21300004, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 3
+      Value: {fileID: 21300006, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 4
+      Value: {fileID: 21300008, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 5
+      Value: {fileID: 21300010, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 6
+      Value: {fileID: 21300012, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 7
+      Value: {fileID: 21300014, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 8
+      Value: {fileID: 21300016, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 9
+      Value: {fileID: 21300018, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 10
+      Value: {fileID: 21300020, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 11
+      Value: {fileID: 21300022, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}
+    - Key: 12
+      Value: {fileID: 21300024, guid: c11b2339dd683da40b806571e97c5ccc, type: 3}

@@ -14,8 +14,7 @@ namespace KMUtility.Unity.Page
 	}
 
 	[Serializable]
-	public class ButtonPaseDict : UnityDictionary<ComparableButton, PageBase, ButtonPasePair> { public ButtonPaseDict() : base((PageBase)null) { } }
-
+	public class ButtonPaseDict : UnityDictionary<ComparableButton, PageBase, ButtonPasePair> { }
 	[Serializable]
 	public class ButtonPasePair : KeyAndValue<ComparableButton, PageBase> { }
 

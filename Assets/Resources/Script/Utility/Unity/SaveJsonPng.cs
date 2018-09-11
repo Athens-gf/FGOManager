@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Text;
 using System.IO;
 
 namespace KMUtility.Unity
@@ -47,7 +46,13 @@ namespace KMUtility.Unity
 		/// <summary> Png画像の保存 </summary>
 		/// <param name="_path">保存するパス</param>
 		/// <param name="_texture">画像データ</param>
-		public static void SavePng(string _path, Texture2D _texture) => File.WriteAllBytes(_path, _texture.EncodeToPNG());
+		public static void SavePng(string _path, Texture2D _texture)
+		{
+			var direName = Path.GetDirectoryName(_path);
+			if (!Directory.Exists(direName))
+				Directory.CreateDirectory(direName);
+			File.WriteAllBytes(_path, _texture.EncodeToPNG());
+		}
 
 		/// <summary> char型2つからColorに変換 </summary>
 		public static Color GetColorFromChars(char _c0, char _c1)

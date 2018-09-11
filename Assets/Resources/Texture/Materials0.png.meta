@@ -50,6 +50,7 @@ TextureImporter:
     21300090: G09
     21300092: Materials0_34
     21300094: Materials0_35
+    21300096: C01
   externalObjects: {}
   serializedVersion: 7
   mipmaps:
@@ -838,6 +839,26 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: cc60c258604d588419fe770e0216648f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: C01
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 576
+        width: 132
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dca171ac139600240998d42b66639f26
       vertices: []
       indices: 
       edges: []

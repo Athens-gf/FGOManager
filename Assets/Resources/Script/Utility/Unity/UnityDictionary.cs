@@ -84,7 +84,7 @@ namespace KMUtility.Unity
 		public event EventHandler OnChanged;
 
 		#region Constructor
-		public UnityDictionary(TValue _default) { Default = _default; }
+		public UnityDictionary() { }
 
 		public UnityDictionary(UnityDictionary<TKey, TValue, Type> _dictionary)
 		{ m_List = new List<Type>(_dictionary.m_List); Default = _dictionary.Default; }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,25 +56,51 @@ namespace KMUtility.Unity.UI
 		public void AddContent(CustomUI _ui)
 		{
 			var navi = _ui.UIObject.navigation;
-			navi.mode = Navigation.Mode.Explicit;
+			navi.mode = UnityEngine.UI.Navigation.Mode.Explicit;
 			navi.selectOnUp = navi.selectOnDown = navi.selectOnLeft = navi.selectOnRight = null;
 			_ui.UIObject.navigation = navi;
-			if (Contents.Any())
-			{
-				Contents.Last().Navi.SelectOnDown = _ui;
-				_ui.Navi.SelectOnUp = Contents.Last();
-			}
-			else
-				_ui.Navi.SelectOnUp = Navi.SelectOnUp;
-			_ui.Navi.SelectOnLeft = Navi.SelectOnLeft;
-			_ui.Navi.SelectOnRight = Navi.SelectOnRight;
 
+			_ui.Navigation.SelectOnLeft = Navigation.SelectOnLeft;
+			_ui.Navigation.SelectOnRight = Navigation.SelectOnRight;
 			Contents.Add(_ui);
+			SetupChain();
+
 			_ui.transform.SetParent(ContentsParent);
 			_ui.transform.localScale = Vector3.one;
 
 			UIManager?.UIList.Add(_ui);
 			_ui.UIManager = UIManager;
+		}
+
+		public void SetupChain()
+		{
+			if (!Contents.Any())
+				return;
+			Contents.First().Navigation.SelectOnUp = Navigation.SelectOnUp;
+			for (int i = 0; i < Contents.Count; i++)
+			{
+				if (i != 0)
+					Contents[i].Navigation.SelectOnUp = Contents[i - 1];
+				if (i != Contents.Count - 1)
+					Contents[i].Navigation.SelectOnDown = Contents[i + 1];
+			}
+			Contents.Last().Navigation.SelectOnDown = Navigation.SelectOnDown;
+		}
+
+		public void RemoveContent(CustomUI _ui)
+		{
+			if (!Contents.Contains(_ui))
+				return;
+			UIManager?.UIList.Remove(_ui);
+			Contents.Remove(_ui);
+
+		}
+
+		public void OrderSort(Func<CustomUI, CustomUI, int> _sortFunc)
+		{
+			ContentsParent.OrderSort((t0, t1) => _sortFunc(t0.GetComponent<CustomUI>(), t1.GetComponent<CustomUI>()));
+			Contents.Sort((c0, c1) => _sortFunc(c0, c1));
+			SetupChain();
 		}
 	}
 }
