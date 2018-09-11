@@ -17,11 +17,12 @@ namespace FGOManager
 
 		private void Start()
 		{
+			/*
 			ServantBase sv = new ServantBase { Name = "test" };
 			SaveJsonPng.Save("a.png", sv);
 			var s = SaveJsonPng.Load<ServantBase>("a.png");
 			Debug.Log(s.Name);
-
+			*/
 
 			// クラス間相性データ読み込み
 			CorConflictDic = new Dictionary<Class_e, Dictionary<Class_e, decimal>>();
@@ -32,6 +33,10 @@ namespace FGOManager
 				foreach (Class_e cDef in Enum.GetValues(typeof(Class_e)))
 					CorConflictDic[cAtk][cDef] = csv.GetDecimal((int)cDef, (int)cAtk, -1);
 			}
+		}
+
+		private void Update()
+		{
 		}
 	}
 

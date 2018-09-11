@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,10 +6,8 @@ using UnityEngine.UI;
 
 namespace KMUtility.Unity.UI
 {
-	public class CustomUIManager : MonoBehaviour
+	public class CustomUIManager : MonoBehaviour, IPointerClickHandler
 	{
-		[SerializeField]
-		private CustomUI m_FirstSelectUI = null;
 		[SerializeField]
 		private List<CustomUI> m_UIList = null;
 
@@ -18,9 +16,22 @@ namespace KMUtility.Unity.UI
 		private void Start()
 		{
 			foreach (var ui in UIList)
+			{
 				ui.IsSelect = false;
-			if (m_FirstSelectUI != null)
-				m_FirstSelectUI.IsSelect = true;
+				ui.UIManager = this;
+			}
+			if (UIList.First())
+				UIList.First().IsSelect = true;
+		}
+
+		private void Update()
+		{
+			if (UIList.Any(ui => ui.IsSelect))
+				return;
+			if (UIList.Last() && ((KeySet.Shift + KeyCode.Tab) | KeyCode.UpArrow | KeyCode.LeftArrow).GetKeyDown())
+				UIList.Last().IsSelect = true;
+			else if (UIList.First() && (KeySet.Tab | KeyCode.DownArrow | KeyCode.RightArrow).GetKeyDown())
+				UIList.First().IsSelect = true;
 		}
 
 		public void SetSelect(CustomUI _UI)
@@ -30,5 +41,7 @@ namespace KMUtility.Unity.UI
 					ui.IsSelect = false;
 
 		}
+
+		public void OnPointerClick(PointerEventData eventData) => SetSelect(null);
 	}
 }

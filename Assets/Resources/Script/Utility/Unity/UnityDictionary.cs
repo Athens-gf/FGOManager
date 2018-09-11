@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -34,6 +35,11 @@ namespace KMUtility.Unity
 			{
 				if (m_Table == null) m_Table = ConvertListToDictionary(m_List);
 				return m_Table;
+			}
+			set
+			{
+				m_List = value.Select(d => new Type { Key = d.Key, Value = d.Value }).ToList();
+				m_Table = ConvertListToDictionary(m_List);
 			}
 		}
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace KMUtility
 {
@@ -38,6 +40,9 @@ namespace KMUtility
 			return list;
 		}
 
+		/// <summary> 2つのコンテナが同じかどうかを返す </summary>
+		public static bool Same<T>(this IEnumerable<T> _iter0, IEnumerable<T> _iter1) => !_iter0.Except(_iter1).Any() && !_iter1.Except(_iter0).Any();
+
 		/// <summary> ある要素を初期要素としたコンテナを用意し，返す </summary>
 		/// <returns>用意したコンテナ</returns>
 		/// <param name="_t">初期要素</param>
@@ -53,8 +58,22 @@ namespace KMUtility
 			foreach (K v in Enum.GetValues(typeof(K))) _dic[v] = _value;
 			return _dic;
 		}
+
 		/// <summary> 2つのアクションを連続実行するアクションを作成する </summary>
 		public static Action Add(this Action _action0, Action _action1) => () => { _action0(); _action1(); };
 
+		/// <summary> DeapCopyを取得する </summary>
+		/// <param name="src"></param>
+		/// <returns></returns>
+		public static T DeepCopy<T>(this T _src)
+		{
+			using (var memoryStream = new MemoryStream())
+			{
+				var binaryFormatter = new BinaryFormatter();
+				binaryFormatter.Serialize(memoryStream, _src);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+				return (T)binaryFormatter.Deserialize(memoryStream);
+			}
+		}
 	}
 }

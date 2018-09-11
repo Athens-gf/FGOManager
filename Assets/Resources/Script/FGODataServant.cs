@@ -341,9 +341,9 @@ namespace FGOManager
 		public List<ClassSkill> ClassSkills = new List<ClassSkill>();
 
 		/// <summary> 霊基再臨素材 </summary>
-		public Material[] SecondComingMaterials = new Material[4];
+		public MaterialNumber[] SecondComingMaterials = new MaterialNumber[4];
 		/// <summary> スキル育成素材 </summary>
-		public Material[] SkillMaterials = new Material[9];
+		public MaterialNumber[] SkillMaterials = new MaterialNumber[9];
 
 		/// <summary> 絆礼装 </summary>
 		public ConceptDress BondDress = new ConceptDress();
@@ -673,7 +673,15 @@ namespace FGOManager
 
 		#endregion
 
-		public ServantBase() { NoblePhantasm.GetHit = () => CommandCard[CommandCard_e.NoblePhantasm].Hit; }
+		public ServantBase()
+		{
+			NoblePhantasm.GetHit = () => CommandCard[CommandCard_e.NoblePhantasm].Hit;
+			for (int i = 0; i < SecondComingMaterials.Length; i++)
+				SecondComingMaterials[i] = new MaterialNumber();
+			for (int i = 0; i < SkillMaterials.Length; i++)
+				SkillMaterials[i] = new MaterialNumber();
+			SkillMaterials[8][Material_e.TraditionalCrystal] = 1;
+		}
 
 		#region Method
 		/// <summary> 聖杯転輪の現在のレベルによる補正値を取得する </summary>
