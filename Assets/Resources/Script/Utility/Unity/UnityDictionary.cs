@@ -2,6 +2,12 @@
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Security;
+using System.Collections;
 
 namespace KMUtility.Unity
 {
@@ -9,8 +15,8 @@ namespace KMUtility.Unity
 	/// Unity用テーブルの管理クラス
 	/// </summary>
 	[Serializable]
-	public class UnityDictionary<TKey, TValue, Type> where TKey : IComparable
-		where Type : KeyAndValue<TKey, TValue>, new()
+	public class UnityDictionary<TKey, TValue, Type> : IEnumerable<KeyValuePair<TKey, TValue>>
+		where TKey : IComparable where Type : KeyAndValue<TKey, TValue>, new()
 	{
 		#region Inspector
 		[SerializeField]
@@ -26,9 +32,7 @@ namespace KMUtility.Unity
 		#endregion
 
 		#region Property
-		/// <summary>
-		/// インスペクタ対応辞書
-		/// </summary>
+		/// <summary> インスペクタ対応辞書 </summary>
 		public Dictionary<TKey, TValue> Table
 		{
 			get
@@ -43,14 +47,10 @@ namespace KMUtility.Unity
 			}
 		}
 
-		/// <summary>
-		/// 要素数
-		/// </summary>
+		/// <summary> 要素数 </summary>
 		public int Count { get { return Table.Count; } }
 
-		/// <summary>
-		/// インデクサ
-		/// </summary>
+		/// <summary> インデクサ </summary>
 		public TValue this[TKey _key]
 		{
 			get
@@ -62,29 +62,24 @@ namespace KMUtility.Unity
 			set { Add(_key, value); }
 		}
 
-		/// <summary>
-		/// 辞書内のキーのコレクション
-		/// </summary>
+		/// <summary> 辞書内のキーのコレクション </summary>
 		public Dictionary<TKey, TValue>.KeyCollection Keys { get { return Table.Keys; } }
 
-		/// <summary>
-		/// 辞書内の要素のコレクション
-		/// </summary>
+		/// <summary> 辞書内の要素のコレクション </summary>
 		public Dictionary<TKey, TValue>.ValueCollection Values { get { return Table.Values; } }
 
-		/// <summary>
-		/// デフォルト要素
-		/// </summary>
+		/// <summary> デフォルト要素 </summary>
 		public TValue Default { get { return m_Default; } set { m_Default = value; } }
+
 		#endregion
 
-		/// <summary>
-		/// 要素が変更されたときに呼び出されるイベントハンドラ
-		/// </summary>
+		/// <summary> 要素が変更されたときに呼び出されるイベントハンドラ </summary>
 		public event EventHandler OnChanged;
 
 		#region Constructor
 		public UnityDictionary() { }
+
+		public UnityDictionary(TValue _default) { Default = _default; }
 
 		public UnityDictionary(UnityDictionary<TKey, TValue, Type> _dictionary)
 		{ m_List = new List<Type>(_dictionary.m_List); Default = _dictionary.Default; }
@@ -92,9 +87,7 @@ namespace KMUtility.Unity
 		#endregion
 
 		#region Method
-		/// <summary>
-		/// 内部管理用リストから辞書を作成する
-		/// </summary>
+		/// <summary> 内部管理用リストから辞書を作成する </summary>
 		private static Dictionary<TKey, TValue> ConvertListToDictionary(List<Type> _list)
 		{
 			Dictionary<TKey, TValue> dic = new Dictionary<TKey, TValue>();
@@ -104,9 +97,7 @@ namespace KMUtility.Unity
 			return dic;
 		}
 
-		/// <summary>
-		/// 要素の追加
-		/// </summary>
+		/// <summary> 要素の追加 </summary>
 		/// <param name="_key">追加するキー</param>
 		/// <param name="_value">キーに対応する要素</param>
 		public void Add(TKey _key, TValue _value)
@@ -126,27 +117,37 @@ namespace KMUtility.Unity
 			OnChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// 要素の全削除
-		/// </summary>
+		/// <summary> 要素の削除 </summary>
+		/// <param name="_key">削除するキー</param>
+		public bool Remove(TKey _key)
+		{
+			if (ContainsKey(_key))
+			{
+				m_List.RemoveAll(kv => kv.Key.CompareTo(_key) == 0);
+				m_Table.Remove(_key);
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary> 要素の全削除 </summary>
 		public void Clear()
 		{
 			m_List.Clear();
 			m_Table = null;
 		}
 
-		/// <summary>
-		/// キーが辞書に含まれているかどうか
-		/// </summary>
+		/// <summary> キーが辞書に含まれているかどうか </summary>
 		/// <param name="_key">確認するキー</param>
 		public bool ContainsKey(TKey _key) => Table.ContainsKey(_key);
 
-		/// <summary>
-		/// 要素が辞書に含まれているかどうか
-		/// </summary>
+		/// <summary> 要素が辞書に含まれているかどうか </summary>
 		/// <param name="_key">確認する要素</param>
 		public bool ContainsValue(TValue _value) => Table.ContainsValue(_value);
 
+		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => ((IEnumerable<KeyValuePair<TKey, TValue>>)Table).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<TKey, TValue>>)Table).GetEnumerator();
 
 		#endregion
 	}

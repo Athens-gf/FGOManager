@@ -71,16 +71,14 @@ namespace KMUtility.Unity
 		public static KeySet GetAnd(params KeyCode[] _keys)
 		{
 			var ks = new AndOrArrow<KeyCode>();
-			foreach (var key in _keys)
-				ks &= key;
+			_keys.ToList().ForEach(key => ks &= key);
 			return ks.ToKeySet();
 		}
 
 		public static KeySet GetOr(params KeyCode[] _keys)
 		{
 			var ks = new AndOrArrow<KeyCode>();
-			foreach (var key in _keys)
-				ks |= key;
+			_keys.ToList().ForEach(key => ks |= key);
 			return ks.ToKeySet();
 		}
 
@@ -94,8 +92,7 @@ namespace KMUtility.Unity
 				case Type_e.And:
 				case Type_e.Arrow:
 					bool flag = true;
-					foreach (var ks in Children)
-						flag = flag && ks.ToKeySet().GetKey();
+					Children.ForEach(ks => flag = flag && ks.ToKeySet().GetKey());
 					return flag;
 				case Type_e.Or:
 					foreach (var ks in Children)
@@ -120,10 +117,8 @@ namespace KMUtility.Unity
 						bool flag = ks0.ToKeySet().GetKeyDown();
 						if (flag)
 						{
-							foreach (var ks1 in Children.Where(ks => ks != ks0))
-								flag = flag && ks1.ToKeySet().GetKey();
-							if (flag)
-								return true;
+							Children.Where(ks => ks != ks0).ToList().ForEach(ks1 => flag = flag && ks1.ToKeySet().GetKey());
+							if (flag) return true;
 						}
 					}
 					return false;
@@ -134,8 +129,7 @@ namespace KMUtility.Unity
 					return false;
 				case Type_e.Arrow:
 					bool flag1 = true;
-					foreach (var ks in Children.Where(ks => ks != Children.Last()))
-						flag1 = flag1 && ks.ToKeySet().GetKey();
+					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.ToKeySet().GetKey());
 					return flag1 && Children.Last().ToKeySet().GetKeyDown();
 				default:
 					return false;
@@ -155,10 +149,8 @@ namespace KMUtility.Unity
 						bool flag = ks0.ToKeySet().GetKeyUp();
 						if (flag)
 						{
-							foreach (var ks1 in Children.Where(ks => ks != ks0))
-								flag = flag && ks1.ToKeySet().GetKey();
-							if (flag)
-								return true;
+							Children.Where(ks => ks != ks0).ToList().ForEach(ks => flag = flag && ks.ToKeySet().GetKey());
+							if (flag) return true;
 						}
 					}
 					return false;
@@ -169,8 +161,7 @@ namespace KMUtility.Unity
 					return false;
 				case Type_e.Arrow:
 					bool flag1 = true;
-					foreach (var ks in Children.Where(ks => ks != Children.Last()))
-						flag1 = flag1 && ks.ToKeySet().GetKey();
+					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.ToKeySet().GetKey());
 					return flag1 && Children.Last().ToKeySet().GetKeyUp();
 				default:
 					return false;
@@ -182,7 +173,7 @@ namespace KMUtility.Unity
 		public static int GetKeyExclusive(params KeySet[] _keysets)
 		{
 			List<bool> flags = new List<bool>();
-			foreach (var ks in _keysets) flags.Add(ks.GetKey());
+			_keysets.ToList().ForEach(ks => flags.Add(ks.GetKey()));
 			if (flags.Count(b => b) != 1) return -1;
 			return flags.Select((b, i) => new { Flag = b, Index = i }).First(x => x.Flag).Index;
 		}

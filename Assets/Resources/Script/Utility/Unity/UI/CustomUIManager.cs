@@ -2,32 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace KMUtility.Unity.UI
 {
-	public class CustomUIManager : MonoBehaviour, IPointerClickHandler
+	public class CustomUIManager : SingletonMonoBehaviour<CustomUIManager>
 	{
-		[SerializeField]
-		private List<CustomUI> m_UIList = null;
-
-		public List<CustomUI> UIList { get { return m_UIList; } }
-
-		private void Start()
-		{
-			foreach (var ui in UIList)
-			{
-				ui.IsSelect = false;
-				ui.UIManager = this;
-			}
-			if (UIList.First())
-				UIList.First().IsSelect = true;
-		}
+		public List<CustomUI> UIList { get; private set; } = new List<CustomUI>();
 
 		private void Update()
 		{
 			if (UIList.Any(ui => ui.IsSelect))
-				return;
+			{
+				if (EventSystem.current.currentSelectedGameObject)
+					return;
+				else
+					SetSelect(null);
+			}
+
 			if (UIList.Last() && ((KeySet.Shift + KeyCode.Tab) | KeyCode.UpArrow | KeyCode.LeftArrow).GetKeyDown())
 				UIList.Last().IsSelect = true;
 			else if (UIList.First() && (KeySet.Tab | KeyCode.DownArrow | KeyCode.RightArrow).GetKeyDown())
@@ -39,9 +30,6 @@ namespace KMUtility.Unity.UI
 			foreach (var ui in UIList)
 				if (ui != _UI)
 					ui.IsSelect = false;
-
 		}
-
-		public void OnPointerClick(PointerEventData eventData) => SetSelect(null);
 	}
 }

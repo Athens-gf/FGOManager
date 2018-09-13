@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -18,10 +19,10 @@ namespace KMUtility.Unity.UI
 
 			public TabMove_e TabMove = TabMove_e.LeftRight;
 
-			public CustomUI SelectOnUp = null;
-			public CustomUI SelectOnDown = null;
 			public CustomUI SelectOnLeft = null;
 			public CustomUI SelectOnRight = null;
+			public CustomUI SelectOnUp = null;
+			public CustomUI SelectOnDown = null;
 
 			public CustomUI Back { get { return (TabMove == TabMove_e.LeftRight ? SelectOnLeft : SelectOnUp); } }
 			public CustomUI Next { get { return (TabMove == TabMove_e.LeftRight ? SelectOnRight : SelectOnDown); } }
@@ -32,8 +33,6 @@ namespace KMUtility.Unity.UI
 		[SerializeField]
 		private Shadow m_Shadow = null;
 
-
-		[UnityEngine.Serialization.FormerlySerializedAs("m_Navi")]
 		[SerializeField]
 		private Navi_ic m_Navigation = new Navi_ic();
 
@@ -41,24 +40,26 @@ namespace KMUtility.Unity.UI
 
 		public virtual bool IsSelectet { get { return true; } }
 
+		public UnityEvent OnSelect = null;
+
 		/// <summary> トリガーイベントの参照 </summary>
 		public EventTrigger Trigger { get { return GetComponent<EventTrigger>() ?? gameObject.AddComponent<EventTrigger>(); } }
 
 		/// <summary> 選択中かどうか </summary>
-		public bool IsSelect
+		public virtual bool IsSelect
 		{
 			get { return m_IsSelect; }
 			set
 			{
 				OnSelected(value);
-				if (value && IsSelectet)
+				if (value && IsSelectet && !EventSystem.current.alreadySelecting)
 					EventSystem.current.SetSelectedGameObject(gameObject);
 			}
 		}
 		//		EventSystem.current.SetSelectedGameObject(gameObject);
 
 		/// <summary> UIManager </summary>
-		public CustomUIManager UIManager { get; set; }
+		public CustomUIManager UIManager => CustomUIManager.Instance;
 
 		/// <summary> UI要素 </summary>
 		public virtual Selectable UIObject { get { return GetComponent<Selectable>(); } }
@@ -68,7 +69,7 @@ namespace KMUtility.Unity.UI
 		protected virtual void Reset()
 		{
 			m_Shadow = GetComponent<Shadow>();
-			m_Shadow.effectDistance = new Vector2(5, -5);
+			m_Shadow.effectDistance = new Vector2(3, -3);
 			IsSelect = false;
 		}
 
@@ -81,19 +82,26 @@ namespace KMUtility.Unity.UI
 			entry.callback.AddListener((_) => OnUpdateSelected());
 			Trigger.triggers.Add(entry);
 
+
 			var navi = UIObject.navigation;
 			navi.mode = UnityEngine.UI.Navigation.Mode.Explicit;
 			navi.selectOnUp = navi.selectOnDown = navi.selectOnLeft = navi.selectOnRight = null;
 			UIObject.navigation = navi;
+
+			UIManager.UIList.Add(this);
+			if (m_Shadow) m_Shadow.enabled = false;
 		}
 
+		protected void OnDestroy() => UIManager.UIList.Remove(this);
+
 		/// <summary> 選択された、または選択が解除されたとき </summary>
-		public virtual void OnSelected(bool _isSelect)
+		protected virtual void OnSelected(bool _isSelect)
 		{
 			if (!IsSelect && _isSelect)
-				UIManager?.SetSelect(this);
+				UIManager.SetSelect(this);
 			m_IsSelect = _isSelect;
-			m_Shadow.enabled = _isSelect;
+			if (m_Shadow) m_Shadow.enabled = _isSelect;
+			if (!IsSelect && _isSelect) OnSelect?.Invoke();
 		}
 
 		/// <summary> 選択されている間呼び出される </summary>

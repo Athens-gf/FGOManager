@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 namespace KMUtility.Unity.UI
 {
 	[RequireComponent(typeof(ScrollRect))]
-	public class CustomScrollView : CustomUI
+	public class CustomUIScrollView : CustomUI
 	{
 		public List<CustomUI> Contents { get; private set; } = new List<CustomUI>();
 		public RectTransform ContentsParent { get { return GetComponent<ScrollRect>().content; } }
@@ -21,10 +21,14 @@ namespace KMUtility.Unity.UI
 
 		private void Start() { }
 
-		public override void OnSelected(bool _isSelect)
+		protected override void OnSelected(bool _isSelect)
 		{
-			if (_isSelect && Contents.Any())
-				((KeySet.Shift + KeyCode.Tab).GetKeyDown() ? Contents.Last() : Contents.First()).IsSelect = true;
+			if (_isSelect)
+				if (Contents.Any())
+					((KeySet.Shift + KeyCode.Tab).GetKeyDown() ? Contents.Last() : Contents.First()).IsSelect = true;
+				else if (Navigation.Next != null)
+					Navigation.Next.IsSelect = true;
+			if (!IsSelect && _isSelect) OnSelect?.Invoke();
 		}
 
 		private void Update()
@@ -67,9 +71,6 @@ namespace KMUtility.Unity.UI
 
 			_ui.transform.SetParent(ContentsParent);
 			_ui.transform.localScale = Vector3.one;
-
-			UIManager?.UIList.Add(_ui);
-			_ui.UIManager = UIManager;
 		}
 
 		public void SetupChain()
@@ -89,17 +90,21 @@ namespace KMUtility.Unity.UI
 
 		public void RemoveContent(CustomUI _ui)
 		{
-			if (!Contents.Contains(_ui))
-				return;
-			UIManager?.UIList.Remove(_ui);
+			if (!Contents.Contains(_ui)) return;
 			Contents.Remove(_ui);
-
+			Destroy(_ui.gameObject);
 		}
 
-		public void OrderSort(Func<CustomUI, CustomUI, int> _sortFunc)
+		public void Clear()
 		{
-			ContentsParent.OrderSort((t0, t1) => _sortFunc(t0.GetComponent<CustomUI>(), t1.GetComponent<CustomUI>()));
-			Contents.Sort((c0, c1) => _sortFunc(c0, c1));
+			Contents.ForEach(ui => Destroy(ui.gameObject));
+			Contents.Clear();
+		}
+
+		public void OrderSort<T>(Func<CustomUI, T> _keySelector) where T : IComparable
+		{
+			ContentsParent.OrderSort(t => _keySelector(t.GetComponent<CustomUI>()));
+			Contents = Contents.OrderBy(_keySelector).ToList();
 			SetupChain();
 		}
 	}

@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 namespace KMUtility.Unity.UI
@@ -12,11 +11,28 @@ namespace KMUtility.Unity.UI
 		public struct SetValue
 		{
 			public bool IsUse;
-			public decimal Value;
+			public double m_Value;
+			public decimal Value { get { return (decimal)m_Value; } set { m_Value = (double)value; } }
 		}
 		public SetValue Max = new SetValue { IsUse = false, Value = 0 };
 		public SetValue Min = new SetValue { IsUse = false, Value = 0 };
 		public SetValue Scroll = new SetValue { IsUse = false, Value = 1 };
+
+		private void ApplyMinMaxValue() => Value = GetApplyMinMaxValue(Value);
+		private decimal GetApplyMinMaxValue(decimal _value)
+		{
+			if (Max.IsUse && Min.IsUse) return System.Math.Min(System.Math.Max(_value, Min.Value), Max.Value);
+			if (Max.IsUse) return System.Math.Min(_value, Max.Value);
+			if (Min.IsUse) return System.Math.Max(_value, Min.Value);
+			return _value;
+		}
+
+		public bool IsUseMax { get { return Max.IsUse; } set { Max.IsUse = value; ApplyMinMaxValue(); } }
+		public decimal MaxValue { get { return Max.Value; } set { Max.Value = value; ApplyMinMaxValue(); } }
+		public bool IsUseMin { get { return Min.IsUse; } set { Min.IsUse = value; ApplyMinMaxValue(); } }
+		public decimal MinValue { get { return Min.Value; } set { Min.Value = value; ApplyMinMaxValue(); } }
+		public bool IsScroll { get { return Scroll.IsUse; } set { Scroll.IsUse = value; } }
+		public decimal ScrollValue { get { return Scroll.Value; } set { Scroll.Value = value; } }
 
 		[SerializeField]
 		private decimal m_Value = 0;
@@ -25,17 +41,15 @@ namespace KMUtility.Unity.UI
 			get { return m_Value; }
 			set
 			{
-				if (Max.IsUse) m_Value = System.Math.Min(value, Max.Value);
-				if (Min.IsUse) m_Value = System.Math.Max(value, Min.Value);
+				var val = GetApplyMinMaxValue(value);
+				if (m_Value == val) return;
+				m_Value = val;
 				Text = m_Value.ToString();
 				OnEndEditValue?.Invoke(m_Value);
 			}
 		}
 
-		[Serializable]
-		public class SubmitEvent : UnityEvent<decimal> { }
-
-		public SubmitEvent OnEndEditValue = null;
+		public DecimalEvent OnEndEditValue = null;
 
 		void OnValidate() { Value = m_Value; }
 

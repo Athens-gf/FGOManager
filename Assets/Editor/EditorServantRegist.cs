@@ -15,16 +15,16 @@ namespace FGOManager.Editor
 	public class EditorServantRegist : EditorWindow
 	{
 		readonly string[] Rares = new string[] { "_", "☆", "☆☆", "☆☆☆", "☆☆☆☆", "☆☆☆☆☆" };
-		readonly string[] PlusStr = new string[] { "-", " ", "+", "++" };
+		//		readonly string[] PlusStr = new string[] { "-", " ", "+", "++" };
 		readonly string[] SecondStr = new string[] { "第一", "第二", "第三", "最終" };
 		private PopupItems<Class_e> PopupClass = new PopupItems<Class_e>(x => x.GetShortName(), x => (int)x);
 		private PopupItems<CommandCard.Type_e> PopupCommandCard = new PopupItems<CommandCard.Type_e>(x => x.ToString(), x => (int)x);
-		private PopupItems<Attributes_e> PopupAttributes = new PopupItems<Attributes_e>(x => x.GetText(), x => (int)x);
-		private PopupItems<Policy_e> PopupPolicy = new PopupItems<Policy_e>(x => x.GetText(), x => (int)x);
+		private PopupItems<Attribute_e> PopupAttributes = new PopupItems<Attribute_e>(x => x.GetText(), x => (int)x);
+		private PopupItems<Policy.Type_e> PopupPolicy = new PopupItems<Policy.Type_e>(x => x.GetText(), x => (int)x);
 		private PopupItems<Personality.Type_e> PopupPersonality = new PopupItems<Personality.Type_e>(x => x.GetText(), x => (int)x);
 		private PopupItems<Sex_e> PopupSex = new PopupItems<Sex_e>(x => x.GetText(), x => (int)x);
 		private PopupItems<StatusTrend_e> PopupStatusTrend = new PopupItems<StatusTrend_e>(x => x.GetText(), x => -(int)x);
-		private PopupItems<Rank.Type_e> PopupRank = new PopupItems<Rank.Type_e>(x => x.ToString(), x => -(int)x);
+		//		private PopupItems<Rank.Type_e> PopupRank = new PopupItems<Rank.Type_e>(x => x.ToString(), x => -(int)x);
 
 		public class MultiPopupMaterial
 		{
@@ -42,7 +42,7 @@ namespace FGOManager.Editor
 					using (new GUILayout.VerticalScope(GUILayout.Width(100)))
 					{
 						EditorGUILayout.LabelField(_label, GUILayout.Width(100));
-						List<Material_e> lMat = _materialNumber.Table.Where(x => x.Value > 0).Select(x => x.Key).ToList();
+						List<Material_e> lMat = _materialNumber.Where(x => x.Value > 0).Select(x => x.Key).ToList();
 						Dictionary<Material_e, int> table = new Dictionary<Material_e, int>();
 						using (new CheckChangeScope(() => _materialNumber.Table = table))
 							table = ExMPMaterial.Popup(lMat, false, 100).ToDictionary(m => m, m => _materialNumber[m] == 0 ? 1 : _materialNumber[m]);
@@ -117,7 +117,7 @@ namespace FGOManager.Editor
 					for (int i = 0; i < editServant.SecondComingMaterials.Length; i++)
 					{
 						var mat = editServant.SecondComingMaterials[i];
-						foreach (Material_e m in Enum.GetValues(typeof(Material_e)).Cast<Material_e>().Where(m => m.IsPieceMonument()))
+						foreach (Material_e m in ExEnum.GetEnumIter<Material_e>().Where(m => m.IsPieceMonument()))
 						{
 							if (m.GetClass() == editServant.Class && (i < 2 ? m.IsType(MaterialType_e.Piece) : m.IsType(MaterialType_e.Monument)))
 								mat[m] = i % 2 == 0 ? editServant.Rare <= 3 ? editServant.Rare + 1 : editServant.Rare : (editServant.Rare + 1) * 2;
@@ -128,7 +128,7 @@ namespace FGOManager.Editor
 					for (int i = 0; i < 6; i++)
 					{
 						var mat = editServant.SkillMaterials[i];
-						foreach (Material_e m in Enum.GetValues(typeof(Material_e)).Cast<Material_e>().Where(m => m.IsSkillStone()))
+						foreach (Material_e m in ExEnum.GetEnumIter<Material_e>().Where(m => m.IsSkillStone()))
 						{
 							if (m.GetClass() == editServant.Class &&
 							(i < 2 ? m.IsType(MaterialType_e.Pyroxene) : (i < 4 ? m.IsType(MaterialType_e.Manastone) : m.IsType(MaterialType_e.SecretStone))))
@@ -332,7 +332,7 @@ namespace FGOManager.Editor
 					// 方針、性格
 					using (new GUILayout.HorizontalScope())
 					{
-						editServant.Policy = PopupPolicy.Popup("方針:", editServant.Policy, 250);
+						editServant.Policy.Type = PopupPolicy.Popup("方針:", editServant.Policy.Type, 250);
 						editServant.Personality.Type = PopupPersonality.Popup("性格:", editServant.Personality.Type, 150);
 						if (editServant.Personality.Type == Personality.Type_e.Other)
 						{
@@ -366,6 +366,7 @@ namespace FGOManager.Editor
 							const int allSize = 240;
 							using (new GUILayout.HorizontalScope(GUILayout.Width(allSize)))
 							{
+								/*
 								const int checkSize = 60;
 								const int typeSize = 60;
 								const int otherSize = allSize - checkSize - typeSize;
@@ -401,6 +402,7 @@ namespace FGOManager.Editor
 										}
 									}
 								}
+								*/
 							}
 						};
 						using (new GUILayout.VerticalScope())
@@ -437,7 +439,7 @@ namespace FGOManager.Editor
 						Action<CommandCard_e> setCC = (t) =>
 						{
 							var cc = editServant.CommandCard;
-							cc[t].Hit = (byte)Mathf.Min(IntField($"{t.GetText()}:", cc[t].Hit, 1, 100), 20);
+							cc[t].Hit = (sbyte)Mathf.Min(IntField($"{t.GetText()}:", cc[t].Hit, 1, 100), 20);
 						};
 						setCC(CommandCard_e.Quick);
 						using (new CheckChangeScope(ChangeNA))
@@ -456,7 +458,7 @@ namespace FGOManager.Editor
 					{
 						using (new CheckChangeScope(ChangeAtk))
 							editServant.StatusTrend = PopupStatusTrend.Popup("ステ傾向:", editServant.StatusTrend, 250);
-						editServant.Attributes = PopupAttributes.Popup("相性:", editServant.Attributes, 250);
+						editServant.Attribute = PopupAttributes.Popup("相性:", editServant.Attribute, 250);
 					}
 					// SR補正初期、DR
 					using (new GUILayout.HorizontalScope())

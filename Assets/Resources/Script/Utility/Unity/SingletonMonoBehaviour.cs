@@ -8,6 +8,9 @@ namespace KMUtility.Unity
 	/// </summary>
 	public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
 	{
+		[SerializeField]
+		private bool m_IsDontDestroyOnLoad = true;
+
 		private static T m_instance;
 		public static T Instance
 		{
@@ -28,7 +31,8 @@ namespace KMUtility.Unity
 		protected virtual void Awake()
 		{
 			// シーンが映っても破壊されないようにする
-			DontDestroyOnLoad(gameObject);
+			if (m_IsDontDestroyOnLoad)
+				DontDestroyOnLoad(gameObject);
 			// 他のゲームオブジェクトにアタッチされているか調べる
 			// アタッチされている場合は破棄する。
 			CheckInstance();

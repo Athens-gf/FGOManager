@@ -1,22 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using KMUtility;
 using KMUtility.Math;
 
 namespace FGOManager
 {
+	/// <summary> 方針 </summary>
+	[Serializable]
+	public class Policy
+	{
+		public enum Type_e
+		{
+			[EnumText("秩序")] Law = 0,
+			[EnumText("中立")] Neutral = 1,
+			[EnumText("混沌")] Chaos = 2,
+
+			[EnumText("その他")] Other = 3,
+		}
+
+		/// <summary> 方針種別 </summary>
+		public Type_e Type = Type_e.Neutral;
+		/// <summary> 方針が「Other」だったときの文字列 </summary>
+		public string OtherStr = "";
+
+		public override string ToString() => Type == Type_e.Other ? OtherStr : Type.GetText();
+	}
+
 	/// <summary> 性格 </summary>
 	[Serializable]
 	public class Personality
 	{
 		public enum Type_e
 		{
-			[EnumText("善")] Right,
-			[EnumText("中庸")] Moderate,
-			[EnumText("悪")] Evil,
+			[EnumText("善")] Right = 0,
+			[EnumText("中庸")] Moderate = 1,
+			[EnumText("悪")] Evil = 2,
 
-			[EnumText("その他")] Other,
+			[EnumText("その他")] Other = 3,
 		}
 
 		/// <summary> 性格種別 </summary>
@@ -46,7 +68,7 @@ namespace FGOManager
 		public class Data
 		{
 			/// <summary> ヒット数 </summary>
-			public byte Hit = 5;
+			public sbyte Hit = 5;
 
 			/// <summary> 対応種類 </summary>
 			public CommandCard_e Type { get; private set; }
@@ -84,28 +106,9 @@ namespace FGOManager
 				}
 			}
 		}
-
-		/// <summary> カード枚数取得 </summary>
-		/// <param name="_card">カード種別取得</param>
-		/// <returns>カード枚数</returns>
-		public int GetCardNum(CommandCard_e _card)
-		{
-			bool isQ = ((int)Type & (int)CommandCard_e.Quick) != 0;
-			bool isA = ((int)Type & (int)CommandCard_e.Arts) != 0;
-			bool isB = ((int)Type & (int)CommandCard_e.Buster) != 0;
-			switch (_card)
-			{
-				case CommandCard_e.Quick:
-					return !isQ ? 1 : (isA || isB) ? 2 : 3;
-				case CommandCard_e.Arts:
-					return !isA ? 1 : (isQ || isB) ? 2 : 3;
-				case CommandCard_e.Buster:
-					return !isB ? 1 : (isQ || isA) ? 2 : 3;
-				default:
-					return 0;
-			}
-		}
 	}
+
+	[Serializable] public class CommandCardEvent : UnityEvent<CommandCard> { }
 
 	/// <summary> パラメーター </summary>
 	[Serializable]
@@ -113,73 +116,36 @@ namespace FGOManager
 	{
 		public enum Type_e
 		{
-			[EnumText("筋力")] Physics,
-			[EnumText("耐久")] Toughness,
-			[EnumText("敏捷")] Agility,
-			[EnumText("魔力")] Magic,
-			[EnumText("幸運")] Luck,
-			[EnumText("宝具")] NoblePhantasm,
-		}
-
-		/// <summary> ランクペア（表示値と実値） </summary>
-		[Serializable]
-		public class RankPair
-		{
-			[SerializeField]
-			private Rank m_Display = new Rank();
-
-			/// <summary> ランクペア実値 </summary>
-			public Rank Real = new Rank();
-
-			/// <summary> ランクペア表示値 </summary>
-			public Rank Display { get { return IsUseDisplay ? m_Display : Real; } }
-
-			public bool IsUseDisplay;
+			[EnumText("筋力")] Physics = 0,
+			[EnumText("耐久")] Toughness = 1,
+			[EnumText("敏捷")] Agility = 2,
+			[EnumText("魔力")] Magic = 3,
+			[EnumText("幸運")] Luck = 4,
+			[EnumText("宝具")] NoblePhantasm = 5,
 		}
 
 		[SerializeField]
-		private RankPair m_RankPhysics = new RankPair(), m_RankToughness = new RankPair(), m_RankAgility = new RankPair();
-		[SerializeField]
-		private RankPair m_RankMagic = new RankPair(), m_RankLuck = new RankPair(), m_RankNoblePhantasm = new RankPair();
+		private Rank[] m_Ranklist = new Rank[6];
 
 		/// <summary> インデクサ </summary>
-		public RankPair this[Type_e _key]
-		{
-			get
-			{
-				switch (_key)
-				{
-					case Type_e.Physics:
-						return m_RankPhysics;
-					case Type_e.Toughness:
-						return m_RankToughness;
-					case Type_e.Agility:
-						return m_RankAgility;
-					case Type_e.Magic:
-						return m_RankMagic;
-					case Type_e.Luck:
-						return m_RankLuck;
-					case Type_e.NoblePhantasm:
-						return m_RankNoblePhantasm;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-		}
+		public Rank this[Type_e _key] { get { return m_Ranklist[(int)_key]; } set { m_Ranklist[(int)_key] = value; } }
 
 		/// <summary> DR補正値 </summary>
-		public decimal CorrectionDR => 0.7m - (decimal)this[Type_e.Magic].Real.Type / 10m - this[Type_e.Magic].Real.Plus * 0.025m;
+		public decimal CorrectionDR => 0.7m - (decimal)this[Type_e.Magic].Type / 10m - this[Type_e.Magic].Plus * 0.025m;
 
+		public Parameter()
+		{
+			for (int i = 0; i < 6; i++)
+				m_Ranklist[i] = new Rank();
+		}
 
 		/// <summary> パラメーター補正値を取得する </summary>
 		/// <param name="_type">パラメーター種類</param>
 		/// <returns>パラメーター補正値</returns>
 		public decimal GetCorrection(Type_e _type)
 		{
-			Rank rank = this[_type].Real;
-			if (rank.Type == Rank.Type_e.Other) return 0;
-			decimal cor = (decimal)rank.Type / 100 + rank.Plus * 0.0025m;
-			if (rank.Type >= Rank.Type_e.B) cor *= 2;
+			decimal cor = (decimal)this[_type].Type / 100 + this[_type].Plus * 0.0025m;
+			if (this[_type].Type >= Rank.Type_e.B) cor *= 2;
 			return 1 + cor;
 		}
 
@@ -218,10 +184,10 @@ namespace FGOManager
 		public List<Effect> EnhancedEffects = new List<Effect>();
 
 		/// <summary> ヒット数取得Func </summary>
-		public Func<byte> GetHit { get; set; } = null;
+		public Func<sbyte> GetHit { get; set; } = null;
 
 		/// <summary> ヒット数 </summary>
-		public byte HitNum { get { return GetHit == null ? (byte)0 : GetHit(); } }
+		public sbyte HitNum { get { return GetHit == null ? (sbyte)0 : GetHit(); } }
 
 
 		/// <summary> 強化状態に応じた効果を取得する </summary>
@@ -269,6 +235,7 @@ namespace FGOManager
 		public List<Effect> Effects = new List<Effect>();
 	}
 
+	[Serializable] public class ServantBaseEvent : UnityEvent<ServantBase> { }
 	/// <summary> サーヴァント基本データクラス </summary>
 	[Serializable]
 	public class ServantBase
@@ -284,7 +251,7 @@ namespace FGOManager
 		public Class_e Class = Class_e.Saber;
 
 		/// <summary> レア度(☆0～5) </summary>
-		public byte Rare = 5;
+		public int Rare = 5;
 
 		/// <summary> 初期ATK </summary>
 		public int FirstATK = 0;
@@ -297,7 +264,7 @@ namespace FGOManager
 		/// <summary> N/A(攻撃時のNP上昇基礎値) </summary>
 		public decimal NA = 0;
 		/// <summary> N/D(攻撃を受けた際のNP上昇基礎値) </summary>
-		public decimal ND = 0;
+		public decimal ND = 3;
 
 		/// <summary> SR計算が初期補正かどうか </summary>
 		public bool IsInitialSR = false;
@@ -307,10 +274,10 @@ namespace FGOManager
 		// マリー（騎）、マルタ（騎）、ステンノ、マタ・ハリ、カーミラ、清姫（狂）、ニコラ・テスラ、アルジュナ、オジマンディアス、イシュタル（弓）、BB（SR）、殺生院キアラ、ホームズ、ニトクリス（殺）、刑部姫、アビゲイル、葛飾北斎、セミラミス、浅上藤乃、イヴァン雷帝、BB（SSR）
 
 		/// <summary> 天地人相性 </summary>
-		public Attributes_e Attributes = Attributes_e.Man;
+		public Attribute_e Attribute = Attribute_e.Man;
 
 		/// <summary> 方針 </summary>
-		public Policy_e Policy = Policy_e.Neutral;
+		public Policy Policy = new Policy();
 
 		/// <summary> 性格 </summary>
 		public Personality Personality = new Personality();
@@ -329,7 +296,7 @@ namespace FGOManager
 		//		“山の翁”のパラメーターは表記よりも1ランクずつ高い（筋力A耐久EX敏捷A魔力D幸運D相当）
 
 		/// <summary> 特性 </summary>
-		public List<string> Characteristic = new List<string>();
+		public List<string> Characteristic = new List<string> { "人型" };
 
 		/// <summary> 宝具データ </summary>
 		public NoblePhantasm NoblePhantasm = new NoblePhantasm();
@@ -414,7 +381,7 @@ namespace FGOManager
 					default: baseByClass = 0; break;
 				}
 				decimal arts = 0;
-				int artsCardNum = CommandCard.GetCardNum(CommandCard_e.Arts);
+				int artsCardNum = CommandCard.Type.GetCount(CommandCard_e.Arts);
 				if (artsCardNum == 1) arts = 1.5m;
 				else if (artsCardNum == 2) arts = 1.125m;
 				else if (artsCardNum == 3) arts = 1.0m;

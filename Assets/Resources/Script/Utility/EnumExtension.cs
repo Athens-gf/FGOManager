@@ -17,7 +17,7 @@ namespace KMUtility
 	/// <summary>
 	/// Enum型から文字列情報を取得する拡張クラス
 	/// </summary>
-	public static class EnumExtension
+	public static class ExEnum
 	{
 		private static Dictionary<Enum, string> m_textCache = new Dictionary<Enum, string>();
 
@@ -95,5 +95,8 @@ namespace KMUtility
 					return (T)Enum.Parse(typeof(T), Enum.GetName(typeof(T), e), false);
 			return (T)Enum.ToObject(typeof(T), 0);
 		}
+
+		public static IEnumerable<T> GetEnumIter<T>() where T : struct => Enum.GetValues(typeof(T)).Cast<T>();
+		public static IEnumerable<T> GetEnumIter<T>(this T _) where T : struct => Enum.GetValues(typeof(T)).Cast<T>();
 	}
 }

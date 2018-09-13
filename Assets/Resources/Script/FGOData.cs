@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using KMUtility;
 using KMUtility.Unity;
+using UnityEngine.Events;
 
 namespace FGOManager
 {
@@ -56,7 +56,7 @@ namespace FGOManager
 	}
 
 	/// <summary> 天地人相性列挙型 </summary>
-	public enum Attributes_e
+	public enum Attribute_e
 	{
 		[EnumText("天")] Heaven = 0,
 		[EnumText("地")] Earth = 1,
@@ -68,17 +68,9 @@ namespace FGOManager
 	/// <summary> 性別列挙型 </summary>
 	public enum Sex_e
 	{
-		[EnumText("男性")] Male,
-		[EnumText("女性")] Female,
-		[EnumText("？")] Other,
-	}
-
-	/// <summary> 方針列挙型 </summary>
-	public enum Policy_e
-	{
-		[EnumText("秩序")] Law,
-		[EnumText("中立")] Neutral,
-		[EnumText("混沌")] Chaos,
+		[EnumText("男性")] Male = 0,
+		[EnumText("女性")] Female = 1,
+		[EnumText("？")] Other = 2,
 	}
 
 	/// <summary> 成長タイプ列挙型 </summary>
@@ -199,6 +191,7 @@ namespace FGOManager
 		[EnumText("配布再臨素材")] DistributionMaterial = 2010,
 		#endregion
 	}
+	[Serializable] public class MaterialEvent : UnityEvent<Material_e> { }
 
 	public enum MaterialType_e
 	{
@@ -229,7 +222,6 @@ namespace FGOManager
 			C = -1,
 			D = -2,
 			E = -3,
-			Other = -100,
 		}
 
 		/// <summary>  </summary>
@@ -239,20 +231,12 @@ namespace FGOManager
 		/// <summary>  </summary>
 		public string Other = "";
 
-		public override string ToString()
-		{
-			if (Type == Type_e.Other) return Other;
-			string s = Type.GetText();
-			if (Plus == 2) s += "++";
-			else if (Plus == 1) s += "+";
-			else if (Plus == -1) s += "-";
-			else if (Plus != 0) s = "";
-			return s;
-		}
+		public override string ToString() => (Other != "") ? Other : (Type.GetText() + ((Plus >= 0) ? new string('+', Plus) : "-"));
 	}
+	[Serializable] public class RankEvent : UnityEvent<Rank> { }
 
 	[Serializable]
-	public class MaterialNumber : UnityDictionary<Material_e, int, KV_MaterialNumber> { }
+	public class MaterialNumber : UnityDictionary<Material_e, int, KV_MaterialNumber> { public MaterialNumber() : base(0) { } }
 	[Serializable]
 	public class KV_MaterialNumber : KeyAndValue<Material_e, int> { }
 
@@ -415,27 +399,27 @@ namespace FGOManager
 		/// <param name="_attriAtk">攻撃側天地人</param>
 		/// <param name="_attriDef">防御側天地人</param>
 		/// <returns>天地人間相性補正値</returns>
-		public static decimal GetCorConflict(this Attributes_e _attriAtk, Attributes_e _attriDef)
+		public static decimal GetCorConflict(this Attribute_e _attriAtk, Attribute_e _attriDef)
 		{
 			switch (_attriAtk)
 			{
-				case Attributes_e.Heaven:
-					if (_attriDef == Attributes_e.Earth) return 1.1m;
-					if (_attriDef == Attributes_e.Man) return 0.9m;
+				case Attribute_e.Heaven:
+					if (_attriDef == Attribute_e.Earth) return 1.1m;
+					if (_attriDef == Attribute_e.Man) return 0.9m;
 					break;
-				case Attributes_e.Earth:
-					if (_attriDef == Attributes_e.Man) return 1.1m;
-					if (_attriDef == Attributes_e.Heaven) return 0.9m;
+				case Attribute_e.Earth:
+					if (_attriDef == Attribute_e.Man) return 1.1m;
+					if (_attriDef == Attribute_e.Heaven) return 0.9m;
 					break;
-				case Attributes_e.Man:
-					if (_attriDef == Attributes_e.Heaven) return 1.1m;
-					if (_attriDef == Attributes_e.Earth) return 0.9m;
+				case Attribute_e.Man:
+					if (_attriDef == Attribute_e.Heaven) return 1.1m;
+					if (_attriDef == Attribute_e.Earth) return 0.9m;
 					break;
-				case Attributes_e.Star:
-					if (_attriDef == Attributes_e.Beast) return 1.1m;
+				case Attribute_e.Star:
+					if (_attriDef == Attribute_e.Beast) return 1.1m;
 					break;
-				case Attributes_e.Beast:
-					if (_attriDef == Attributes_e.Star) return 1.1m;
+				case Attribute_e.Beast:
+					if (_attriDef == Attribute_e.Star) return 1.1m;
 					break;
 				default:
 					break;
@@ -443,6 +427,9 @@ namespace FGOManager
 			return 1;
 		}
 
+		/// <summary> 素材の種別を判別する </summary>
+		/// <param name="_material">素材</param>
+		/// <param name="_type">素材の種類</param>
 		public static bool IsType(this Material_e _material, MaterialType_e _type)
 		{
 			if ((int)_material < (int)_type)
@@ -472,12 +459,27 @@ namespace FGOManager
 			}
 		}
 
+		/// <summary> 素材の種別を取得する </summary>
+		/// <param name="_material">素材</param>
+		public static MaterialType_e GetMaterialType(this Material_e _material)
+		{
+			foreach (var type in ExEnum.GetEnumIter<MaterialType_e>())
+				if (_material.IsType(type))
+					return type;
+			throw new Exception();
+		}
+		/// <summary> 素材がピース・モニュメントかどうかを判別する </summary>
+		/// <param name="_material">素材</param>
 		public static bool IsPieceMonument(this Material_e _material)
 			=> _material.IsType(MaterialType_e.Piece) || _material.IsType(MaterialType_e.Monument);
 
+		/// <summary> 素材がスキル石かどうかを判別する </summary>
+		/// <param name="_material">素材</param>
 		public static bool IsSkillStone(this Material_e _material)
 			=> _material.IsType(MaterialType_e.Pyroxene) || _material.IsType(MaterialType_e.Manastone) || _material.IsType(MaterialType_e.SecretStone);
 
+		/// <summary> 素材の対応クラスを取得する </summary>
+		/// <param name="_material">素材</param>
 		public static Class_e GetClass(this Material_e _material)
 		{
 			if (!_material.IsPieceMonument() && !_material.IsSkillStone())
@@ -485,6 +487,9 @@ namespace FGOManager
 			return (Class_e)((int)_material % 10);
 		}
 
+		/// <summary> クラスと素材種類から素材を取得する </summary>
+		/// <param name="_class">クラス</param>
+		/// <param name="_type">素材の種類</param>
 		public static Material_e GetMaterial(this Class_e _class, MaterialType_e _type)
 		{
 			switch (_type)
@@ -497,6 +502,27 @@ namespace FGOManager
 					return (Material_e)((int)_class + (int)_type);
 				default:
 					throw new Exception();
+			}
+		}
+
+		/// <summary> カード枚数取得 </summary>
+		/// <param name="_card">カード種別取得</param>
+		/// <returns>カード枚数</returns>
+		public static int GetCount(this CommandCard.Type_e _cct, CommandCard_e _card)
+		{
+			bool isQ = ((int)_cct & (int)CommandCard_e.Quick) != 0;
+			bool isA = ((int)_cct & (int)CommandCard_e.Arts) != 0;
+			bool isB = ((int)_cct & (int)CommandCard_e.Buster) != 0;
+			switch (_card)
+			{
+				case CommandCard_e.Quick:
+					return !isQ ? 1 : (isA || isB) ? 2 : 3;
+				case CommandCard_e.Arts:
+					return !isA ? 1 : (isQ || isB) ? 2 : 3;
+				case CommandCard_e.Buster:
+					return !isB ? 1 : (isQ || isA) ? 2 : 3;
+				default:
+					return 0;
 			}
 		}
 	}

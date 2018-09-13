@@ -57,31 +57,13 @@ namespace KMUtility
 				case Type_e.One:
 					return Value.ToString();
 				case Type_e.And:
-					foreach (var asa in Children)
-					{
-						if (str == "")
-							str = $"( {asa.ToString()}";
-						else
-							str += $" & {asa.ToString()}";
-					}
+					Children.ForEach(asa => str += (str == "" ? "( " : " & ") + asa.ToString());
 					return str + " )";
 				case Type_e.Or:
-					foreach (var asa in Children)
-					{
-						if (str == "")
-							str = $"( {asa.ToString()}";
-						else
-							str += $" | {asa.ToString()}";
-					}
+					Children.ForEach(asa => str += (str == "" ? "( " : " | ") + asa.ToString());
 					return str + " )";
 				case Type_e.Arrow:
-					foreach (var asa in Children)
-					{
-						if (str == "")
-							str = $"( {asa.ToString()}";
-						else
-							str += $" -> {asa.ToString()}";
-					}
+					Children.ForEach(asa => str += (str == "" ? "( " : " -> ") + asa.ToString());
 					return str + " )";
 				default:
 					return "";

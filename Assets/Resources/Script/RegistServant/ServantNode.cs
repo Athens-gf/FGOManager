@@ -16,14 +16,13 @@ namespace FGOManager.Register
 			set
 			{
 				m_Servant = value;
-				Text.text = $"{value.No} : {value.Name}";
 				gameObject.name = $"ServantNode {Text.text}";
+				SetName();
 			}
 		}
 
-		private void Start()
-		{
-			Button.onClick.AddListener(() => OnClick());
-		}
+		private void Start() => Button.onClick.AddListener(() => OnClick());
+
+		public void SetName() => Text.text = $"{m_Servant.No} : {m_Servant.Name}";
 	}
 }

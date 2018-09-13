@@ -122,7 +122,7 @@ namespace KMUtility.Editor
 		public PopupItems(Func<T, string> _toStr, Func<T, int> _toValue, Func<T, bool> _fillter = null)
 		{
 			if (_fillter == null) _fillter = t => true;
-			var ie = Enum.GetValues(typeof(T)).Cast<T>().Where(t => _fillter(t)).OrderBy(t => _toValue(t))
+			var ie = ExEnum.GetEnumIter<T>().Where(t => _fillter(t)).OrderBy(t => _toValue(t))
 				.Select((t, i) => new { Type = t, Index = i, Value = _toValue(t) }).ToList();
 			ResultDic = ie.ToDictionary(x => x.Index, x => x.Type);
 			IndexDic = ie.ToDictionary(x => x.Type, x => x.Index);
@@ -147,7 +147,7 @@ namespace KMUtility.Editor
 		public MultiPopupItems(Func<T, string> _toStr, Func<T, int> _toValue, Func<T, bool> _fillter = null)
 		{
 			if (_fillter == null) _fillter = t => true;
-			var enums = Enum.GetValues(typeof(T)).Cast<T>().Where(t => _fillter(t)).OrderBy(t => _toValue(t));
+			var enums = ExEnum.GetEnumIter<T>().Where(t => _fillter(t)).OrderBy(t => _toValue(t));
 			var enumsBuff = enums.Select((t, i) => new { Type = t, Index = i });
 			Options = enumsBuff.Select(x => _toStr(x.Type)).ToArray();
 			var shiftIDs = enumsBuff.ToDictionary(x => x.Type, x => 1 << x.Index);

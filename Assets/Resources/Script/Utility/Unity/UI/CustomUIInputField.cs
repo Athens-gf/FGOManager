@@ -8,10 +8,10 @@ namespace KMUtility.Unity.UI
 	public class CustomUIInputField : CustomUI
 	{
 		public InputField InputField { get { return GetComponent<InputField>(); } }
-		public string Text { get { return InputField.text; } set { InputField.text = value; } }
+		public string Text { get { return InputField.textComponent.text; } set { InputField.text = value; InputField.onEndEdit?.Invoke(value); } }
 		public InputField.SubmitEvent OnEndEdit { get { return InputField.onEndEdit; } }
 
-		protected virtual void Start() => OnEndEdit.AddListener(_ => IsSelect = false);
+		protected virtual void Start() => OnEndEdit.AddListener(s => IsSelect = false);
 
 		protected override void OnUpdateSelected()
 		{

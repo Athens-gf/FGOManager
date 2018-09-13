@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 namespace KMUtility.Unity.UI
@@ -18,6 +17,22 @@ namespace KMUtility.Unity.UI
 		public SetValue Min = new SetValue { IsUse = false, Value = 0 };
 		public SetValue Scroll = new SetValue { IsUse = false, Value = 1 };
 
+		private void ApplyMinMaxValue() => Value = GetApplyMinMaxValue(Value);
+		private int GetApplyMinMaxValue(int _value)
+		{
+			if (Max.IsUse && Min.IsUse) return Mathf.Clamp(_value, Min.Value, Max.Value);
+			if (Max.IsUse) return Mathf.Min(_value, Max.Value);
+			if (Min.IsUse) return Mathf.Max(_value, Min.Value);
+			return _value;
+		}
+
+		public bool IsUseMax { get { return Max.IsUse; } set { Max.IsUse = value; ApplyMinMaxValue(); } }
+		public int MaxValue { get { return Max.Value; } set { Max.Value = value; ApplyMinMaxValue(); } }
+		public bool IsUseMin { get { return Min.IsUse; } set { Min.IsUse = value; ApplyMinMaxValue(); } }
+		public int MinValue { get { return Min.Value; } set { Min.Value = value; ApplyMinMaxValue(); } }
+		public bool IsScroll { get { return Scroll.IsUse; } set { Scroll.IsUse = value; } }
+		public int ScrollValue { get { return Scroll.Value; } set { Scroll.Value = value; } }
+
 		[SerializeField]
 		private int m_Value = 0;
 		public int Value
@@ -25,17 +40,15 @@ namespace KMUtility.Unity.UI
 			get { return m_Value; }
 			set
 			{
-				if (Max.IsUse) m_Value = Mathf.Min(value, Max.Value);
-				if (Min.IsUse) m_Value = Mathf.Max(value, Min.Value);
+				var val = GetApplyMinMaxValue(value);
+				if (m_Value == val) return;
+				m_Value = val;
 				Text = m_Value.ToString();
 				OnEndEditValue?.Invoke(m_Value);
 			}
 		}
 
-		[Serializable]
-		public class SubmitEvent : UnityEvent<int> { }
-
-		public SubmitEvent OnEndEditValue = null;
+		public IntEvent OnEndEditValue = null;
 
 		void OnValidate() { Value = m_Value; }
 
@@ -50,6 +63,7 @@ namespace KMUtility.Unity.UI
 			base.Start();
 			InputField.contentType = InputField.ContentType.IntegerNumber;
 			Value = m_Value;
+			Text = m_Value.ToString();
 			OnEndEdit.AddListener(s =>
 			{
 				int value = 0;

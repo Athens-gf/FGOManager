@@ -2,42 +2,43 @@ fileFormatVersion: 2
 guid: fac0d64b63868a748a0bc27987d128f0
 TextureImporter:
   fileIDToRecycleName:
-    21300000: P0
-    21300002: P1
-    21300004: P2
-    21300006: P3
-    21300008: P4
-    21300010: P5
-    21300012: P6
-    21300014: M0
-    21300016: M1
-    21300018: M2
-    21300020: M3
-    21300022: M4
-    21300024: M5
-    21300026: M6
-    21300028: S00
-    21300030: S01
-    21300032: S02
-    21300034: S03
-    21300036: S04
-    21300038: S05
-    21300040: S06
-    21300042: S10
-    21300044: S11
-    21300046: S12
-    21300048: S13
-    21300050: S14
-    21300052: S15
-    21300054: S16
-    21300056: S20
-    21300058: S21
-    21300060: S22
-    21300062: S23
-    21300064: S24
-    21300066: S25
-    21300068: S26
-    21300070: TC
+    21300000: P00
+    21300002: P01
+    21300004: P02
+    21300006: P03
+    21300008: P04
+    21300010: P05
+    21300012: P06
+    21300014: M00
+    21300016: M01
+    21300018: M02
+    21300020: M03
+    21300022: M04
+    21300024: M05
+    21300026: M06
+    21300028: SP00
+    21300030: SP01
+    21300032: SP02
+    21300034: SP03
+    21300036: SP04
+    21300038: SP05
+    21300040: SP06
+    21300042: SM00
+    21300044: SM01
+    21300046: SM02
+    21300048: SM03
+    21300050: SM04
+    21300052: SM05
+    21300054: SM06
+    21300056: SS00
+    21300058: SS01
+    21300060: SS02
+    21300062: SS03
+    21300064: SS04
+    21300066: SS05
+    21300068: SS06
+    21300070: Ot00
+    21300072: Ot01
   externalObjects: {}
   serializedVersion: 7
   mipmaps:
@@ -131,7 +132,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: P0
+      name: P00
       rect:
         serializedVersion: 2
         x: 0
@@ -151,7 +152,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P1
+      name: P01
       rect:
         serializedVersion: 2
         x: 132
@@ -171,7 +172,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P2
+      name: P02
       rect:
         serializedVersion: 2
         x: 264
@@ -191,7 +192,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P3
+      name: P03
       rect:
         serializedVersion: 2
         x: 396
@@ -211,7 +212,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P4
+      name: P04
       rect:
         serializedVersion: 2
         x: 528
@@ -231,7 +232,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P5
+      name: P05
       rect:
         serializedVersion: 2
         x: 660
@@ -251,7 +252,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: P6
+      name: P06
       rect:
         serializedVersion: 2
         x: 792
@@ -271,10 +272,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M0
+      name: M00
       rect:
         serializedVersion: 2
-        x: 0
+        x: 2
         y: 576
         width: 132
         height: 144
@@ -291,7 +292,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M1
+      name: M01
       rect:
         serializedVersion: 2
         x: 132
@@ -311,11 +312,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M2
+      name: M02
       rect:
         serializedVersion: 2
-        x: 264
-        y: 576
+        x: 262
+        y: 579
         width: 132
         height: 144
       alignment: 0
@@ -331,7 +332,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M3
+      name: M03
       rect:
         serializedVersion: 2
         x: 396
@@ -351,7 +352,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M4
+      name: M04
       rect:
         serializedVersion: 2
         x: 528
@@ -371,7 +372,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M5
+      name: M05
       rect:
         serializedVersion: 2
         x: 660
@@ -391,7 +392,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: M6
+      name: M06
       rect:
         serializedVersion: 2
         x: 792
@@ -411,7 +412,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S00
+      name: SP00
       rect:
         serializedVersion: 2
         x: 0
@@ -431,7 +432,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S01
+      name: SP01
       rect:
         serializedVersion: 2
         x: 132
@@ -451,7 +452,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S02
+      name: SP02
       rect:
         serializedVersion: 2
         x: 264
@@ -471,7 +472,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S03
+      name: SP03
       rect:
         serializedVersion: 2
         x: 396
@@ -491,7 +492,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S04
+      name: SP04
       rect:
         serializedVersion: 2
         x: 528
@@ -511,7 +512,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S05
+      name: SP05
       rect:
         serializedVersion: 2
         x: 660
@@ -531,7 +532,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S06
+      name: SP06
       rect:
         serializedVersion: 2
         x: 792
@@ -551,7 +552,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S10
+      name: SM00
       rect:
         serializedVersion: 2
         x: 0
@@ -571,7 +572,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S11
+      name: SM01
       rect:
         serializedVersion: 2
         x: 132
@@ -591,7 +592,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S12
+      name: SM02
       rect:
         serializedVersion: 2
         x: 264
@@ -611,7 +612,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S13
+      name: SM03
       rect:
         serializedVersion: 2
         x: 396
@@ -631,7 +632,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S14
+      name: SM04
       rect:
         serializedVersion: 2
         x: 528
@@ -651,7 +652,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S15
+      name: SM05
       rect:
         serializedVersion: 2
         x: 660
@@ -671,7 +672,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S16
+      name: SM06
       rect:
         serializedVersion: 2
         x: 792
@@ -691,7 +692,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S20
+      name: SS00
       rect:
         serializedVersion: 2
         x: 0
@@ -711,7 +712,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S21
+      name: SS01
       rect:
         serializedVersion: 2
         x: 129
@@ -731,7 +732,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S22
+      name: SS02
       rect:
         serializedVersion: 2
         x: 264
@@ -751,7 +752,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S23
+      name: SS03
       rect:
         serializedVersion: 2
         x: 396
@@ -771,7 +772,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S24
+      name: SS04
       rect:
         serializedVersion: 2
         x: 528
@@ -791,7 +792,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S25
+      name: SS05
       rect:
         serializedVersion: 2
         x: 660
@@ -811,7 +812,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: S26
+      name: SS06
       rect:
         serializedVersion: 2
         x: 792
@@ -831,7 +832,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TC
+      name: Ot00
       rect:
         serializedVersion: 2
         x: 0
@@ -846,6 +847,26 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: d1578f5589516a348bcec3c478a737ec
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ot01
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 0
+        width: 132
+        height: 144
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dfca3b4ef384e0b4bb98b7d494b949b6
       vertices: []
       indices: 
       edges: []

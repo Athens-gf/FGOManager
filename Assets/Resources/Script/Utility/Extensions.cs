@@ -40,13 +40,66 @@ namespace KMUtility
 			return list;
 		}
 
+		/// <summary> ディクショナリに1つ要素を追加し，その結果を返す </summary>
+		/// <returns>追加後のコンテナ</returns>
+		/// <param name="_dic">追加されるディクショナリ</param>
+		/// <param name="_t">追加する要素</param>
+		public static Dictionary<TKey, Tvalue> AppendDictionary<TKey, Tvalue>(this IEnumerable<KeyValuePair<TKey, Tvalue>> _dic, KeyValuePair<TKey, Tvalue> _t)
+		{
+			var dic = _dic.ToDictionary(kv => kv.Key, kv => kv.Value); dic[_t.Key] = _t.Value;
+			return dic;
+		}
+
+		/// <summary> ディクショナリに別のディクショナリを連結し，その結果を返す </summary>
+		/// <returns>追加後のコンテナ</returns>
+		/// <param name="_dic">追加されるディクショナリ</param>
+		/// <param name="_addDic">追加するディクショナリ</param>
+		public static Dictionary<TKey, Tvalue> AppendDictionary<TKey, Tvalue>(this IEnumerable<KeyValuePair<TKey, Tvalue>> _dic, IEnumerable<KeyValuePair<TKey, Tvalue>> _addDic)
+		{
+			var dic = _dic.ToDictionary(kv => kv.Key, kv => kv.Value); _addDic.ToList().ForEach(kv => dic[kv.Key] = kv.Value);
+			return dic;
+		}
+
+		/// <summary> コンテナに1つ要素を挿入したものを返す </summary>
+		/// <returns>挿入後のコンテナ</returns>
+		/// <param name="_iter">挿入されるコンテナ</param>
+		/// <param name="_index">挿入する位置</param>
+		/// <param name="_t">挿入する要素</param>
+		public static IEnumerable<T> ReternInsert<T>(this IEnumerable<T> _iter, int _index, T _t)
+		{
+			var list = _iter.ToList(); list.Insert(_index, _t);
+			return list;
+		}
+
+		/// <summary> コンテナに別のコンテナを挿入したものを返す </summary>
+		/// <returns>挿入後のコンテナ</returns>
+		/// <param name="_iter">挿入されるコンテナ</param>
+		/// <param name="_index">挿入する位置</param>
+		/// <param name="_insertIter">挿入するコンテナ</param>
+		public static IEnumerable<T> ReternInsert<T>(this IEnumerable<T> _iter, int _index, IEnumerable<T> _insertIter)
+		{
+			var list = _iter.ToList(); list.InsertRange(_index, _insertIter);
+			return list;
+		}
+
 		/// <summary> コンテナから1つ要素を削除したものを返す </summary>
 		/// <returns>追加後のコンテナ</returns>
 		/// <param name="_iter">追加されるコンテナ</param>
-		/// <param name="_t">追加する要素</param>
+		/// <param name="_t">削除する要素</param>
 		public static IEnumerable<T> ReternRemove<T>(this IEnumerable<T> _iter, T _t)
 		{
 			var list = _iter.ToList(); list.Remove(_t);
+			return list;
+		}
+
+		/// <summary> コンテナから別のコンテナ要素をすべて削除したものを返す </summary>
+		/// <returns>追加後のコンテナ</returns>
+		/// <param name="_iter">追加されるコンテナ</param>
+		/// <param name="_removeIter">削除する要素</param>
+		public static IEnumerable<T> ReternRemove<T>(this IEnumerable<T> _iter, IEnumerable<T> _removeIter)
+		{
+			var list = _iter.ToList();
+			_removeIter.ToList().ForEach(item => list.Remove(item));
 			return list;
 		}
 
@@ -75,7 +128,7 @@ namespace KMUtility
 		public static Dictionary<K, V> ResetEnumDictionary<K, V>(this Dictionary<K, V> _dic, V _value) where K : struct
 		{
 			_dic = new Dictionary<K, V>();
-			foreach (K v in Enum.GetValues(typeof(K))) _dic[v] = _value;
+			ExEnum.GetEnumIter<K>().ToList().ForEach(v => _dic[v] = _value);
 			return _dic;
 		}
 
