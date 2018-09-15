@@ -2,11 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Security;
 using System.Collections;
 
 namespace KMUtility.Unity
@@ -15,19 +11,16 @@ namespace KMUtility.Unity
 	/// Unity用テーブルの管理クラス
 	/// </summary>
 	[Serializable]
+	[DataContract]
 	public class UnityDictionary<TKey, TValue, Type> : IEnumerable<KeyValuePair<TKey, TValue>>
-		where TKey : IComparable where Type : KeyAndValue<TKey, TValue>, new()
+		where TKey : IComparable
+		where Type : KeyAndValue<TKey, TValue>, new()
 	{
 		#region Inspector
-		[SerializeField]
+		[SerializeField, DataMember]
 		private TValue m_Default;
-		[SerializeField]
-		private List<Type> m_List = null;
-
-		#endregion
-
-		#region PrivateMember
-		private Dictionary<TKey, TValue> m_Table = null;
+		[SerializeField, DataMember]
+		private List<Type> m_List = new List<Type>();
 
 		#endregion
 
@@ -35,30 +28,17 @@ namespace KMUtility.Unity
 		/// <summary> インスペクタ対応辞書 </summary>
 		public Dictionary<TKey, TValue> Table
 		{
-			get
-			{
-				if (m_Table == null) m_Table = ConvertListToDictionary(m_List);
-				return m_Table;
-			}
-			set
-			{
-				m_List = value.Select(d => new Type { Key = d.Key, Value = d.Value }).ToList();
-				m_Table = ConvertListToDictionary(m_List);
-			}
+			get { return m_List?.GroupBy(x => x.Key).ToDictionary(x => x.Last().Key, x => x.Last().Value) ?? new Dictionary<TKey, TValue>(); }
+			set { m_List = value?.Select(d => new Type { Key = d.Key, Value = d.Value }).ToList(); }
 		}
 
 		/// <summary> 要素数 </summary>
-		public int Count { get { return Table.Count; } }
+		public int Count { get { return m_List?.Count ?? 0; } }
 
 		/// <summary> インデクサ </summary>
 		public TValue this[TKey _key]
 		{
-			get
-			{
-				if (m_Table == null) m_Table = ConvertListToDictionary(m_List);
-				if (!ContainsKey(_key)) return Default;
-				return Table[_key];
-			}
+			get { return ContainsKey(_key) ? Table[_key] : Default; }
 			set { Add(_key, value); }
 		}
 
@@ -87,33 +67,14 @@ namespace KMUtility.Unity
 		#endregion
 
 		#region Method
-		/// <summary> 内部管理用リストから辞書を作成する </summary>
-		private static Dictionary<TKey, TValue> ConvertListToDictionary(List<Type> _list)
-		{
-			Dictionary<TKey, TValue> dic = new Dictionary<TKey, TValue>();
-			if (_list == null) _list = new List<Type>();
-			foreach (Type pair in _list)
-				dic.Add(pair.Key, pair.Value);
-			return dic;
-		}
-
 		/// <summary> 要素の追加 </summary>
 		/// <param name="_key">追加するキー</param>
 		/// <param name="_value">キーに対応する要素</param>
 		public void Add(TKey _key, TValue _value)
 		{
-			if (ContainsKey(_key))
-			{
-				m_List.Find(kv => kv.Key.CompareTo(_key) == 0).Value = _value;
-				Table[_key] = _value;
-			}
-			else
-			{
-				Type kav = new Type { Key = _key, Value = _value };
-				if (m_List == null) m_List = new List<Type>();
-				m_List.Add(kav);
-			}
-			Table[_key] = _value;
+			if (m_List == null) m_List = new List<Type>();
+			m_List.Add(new Type { Key = _key, Value = _value });
+			m_List = m_List.GroupBy(x => x.Key).Select(x => x.Last()).ToList();
 			OnChanged?.Invoke(this, EventArgs.Empty);
 		}
 
@@ -124,22 +85,17 @@ namespace KMUtility.Unity
 			if (ContainsKey(_key))
 			{
 				m_List.RemoveAll(kv => kv.Key.CompareTo(_key) == 0);
-				m_Table.Remove(_key);
 				return true;
 			}
 			return false;
 		}
 
 		/// <summary> 要素の全削除 </summary>
-		public void Clear()
-		{
-			m_List.Clear();
-			m_Table = null;
-		}
+		public void Clear() => m_List?.Clear();
 
 		/// <summary> キーが辞書に含まれているかどうか </summary>
 		/// <param name="_key">確認するキー</param>
-		public bool ContainsKey(TKey _key) => Table.ContainsKey(_key);
+		public bool ContainsKey(TKey _key) => m_List?.Any(pair => pair.Key.CompareTo(_key) == 0) == true;
 
 		/// <summary> 要素が辞書に含まれているかどうか </summary>
 		/// <param name="_key">確認する要素</param>

@@ -6,31 +6,14 @@ using UnityEngine.UI;
 
 namespace KMUtility.Unity.Page
 {
-	[Serializable]
-	public class ComparableButton : IComparable
-	{
-		public Button Button = null;
-		public int CompareTo(object obj) { return 0; }
-	}
-
-	[Serializable]
-	public class ButtonPaseDict : UnityDictionary<ComparableButton, PageBase, ButtonPasePair> { }
-	[Serializable]
-	public class ButtonPasePair : KeyAndValue<ComparableButton, PageBase> { }
-
 	/// <summary> ページ管理クラス </summary>
 	public class PageManager : MonoBehaviour
 	{
-		public ButtonPaseDict ButtonPaseDict = null;
-
 		public Stack<PageBase> Pages { get; private set; } = new Stack<PageBase>();
 
 		// Use this for initialization
 		void Start()
 		{
-			foreach (var button in ButtonPaseDict.Keys)
-				button.Button.onClick.AddListener(() => AddPage(ButtonPaseDict[button]));
-
 		}
 
 		/// <summary> ページを追加する </summary>

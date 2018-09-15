@@ -75,9 +75,18 @@ namespace FGOManager.Register
 
 		public void RemoveNode(Material_e _material)
 		{
-			if (MaterialCount?.ContainsKey(_material) == false) return;
+			if (MaterialCount == null || !MaterialCount.ContainsKey(_material)) return;
 			MaterialCount.Remove(_material);
 			m_NodeList.RemoveContent(m_NodeList.Contents.First(ui => ui.GetComponent<MaterialNode>()?.Material == _material));
 		}
+
+		public void RemoveNode()
+		{
+			var mat = m_ContentGroup.ActiveToggles().FirstOrDefault()?.GetComponent<MaterialNode>().Material;
+			if (mat != null)
+				RemoveNode(mat.Value);
+		}
+
+		public void Clear() => m_NodeList.Clear();
 	}
 }

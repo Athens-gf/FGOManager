@@ -2,29 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using KMUtility.Json;
 
 namespace KMUtility.Unity
 {
 	public static class SaveJsonPng
 	{
-		[Serializable]
-		class ListWrapper<T> { public List<T> List; }
-
-		/// <summary> JSON文字列からリスト形式で取得する </summary>
-		/// <param name="_json">変換したいJSON文字列</param>
-		/// <returns>リスト</returns>
-		public static List<T> ListFromJson<T>(string _json) => JsonUtility.FromJson<ListWrapper<T>>(_json).List;
-
-		/// <summary> リスト形式からJSON文字列を取得する </summary>
-		/// <param name="_list">変換したいリスト</param>
-		/// <returns>JSON文字列</returns>
-		public static string ListToJson<T>(List<T> _list) => JsonUtility.ToJson(new ListWrapper<T>() { List = _list });
-
 		/// <summary> Png画像をの読み込み </summary>
 		/// <param name="_path">読み込む画像のパス</param>
 		/// <returns>取得画像のTexture2D</returns>
 		public static Texture2D ReadPng(string _path)
 		{
+			if (!File.Exists(_path)) return null;
 			FileStream fileStream = new FileStream(_path, FileMode.Open, FileAccess.Read);
 			BinaryReader bin = new BinaryReader(fileStream);
 			byte[] readBinary = bin.ReadBytes((int)bin.BaseStream.Length);
@@ -49,7 +38,7 @@ namespace KMUtility.Unity
 		public static void SavePng(string _path, Texture2D _texture)
 		{
 			var direName = Path.GetDirectoryName(_path);
-			if (!Directory.Exists(direName))
+			if (direName != "" && !Directory.Exists(direName))
 				Directory.CreateDirectory(direName);
 			File.WriteAllBytes(_path, _texture.EncodeToPNG());
 		}
@@ -78,7 +67,7 @@ namespace KMUtility.Unity
 		/// <returns>Texture2D</returns>
 		public static Texture2D JsonToTexture(string _json)
 		{
-			int pixelNum = _json.Length / 2;
+			int pixelNum = (_json.Length + 1) / 2;
 			int wh = 1;
 			while (wh * wh < pixelNum) wh++;
 			Texture2D texture = new Texture2D(wh, wh);
@@ -101,6 +90,7 @@ namespace KMUtility.Unity
 		/// <returns>JSON文字列</returns>
 		public static string TextureToJson(Texture2D _texture)
 		{
+			if (!_texture) return "";
 			string str = "";
 			for (int y = 0; y < _texture.height; y++)
 			{
@@ -127,19 +117,10 @@ namespace KMUtility.Unity
 		/// <summary> オブジェクトをJSON形式に変換し、そのJSON文字列をPng画像として保存する </summary>
 		/// <param name="_path">保存先のパス</param>
 		/// <param name="_object">保存するオブジェクト</param>
-		public static void Save(string _path, object _object) => SavePng(_path, JsonToTexture(JsonUtility.ToJson(_object)));
-
-		/// <summary> リストオブジェクトをJSON形式に変換し、そのJSON文字列をPng画像として保存する </summary>
-		/// <param name="_path">保存先のパス</param>
-		/// <param name="_list">保存するリストオブジェクト</param>
-		public static void SaveList<T>(string _path, List<T> _list) => SavePng(_path, JsonToTexture(ListToJson(_list)));
+		public static void Save<T>(string _path, T _object) => SavePng(_path, JsonToTexture(KMJson.ToJson(_object)));
 
 		/// <summary> Png画像画像からオブジェクトデータを読み出す </summary>
 		/// <param name="_path">保存先のパス</param>
-		public static T Load<T>(string _path) => JsonUtility.FromJson<T>(TextureToJson(ReadPng(_path)));
-
-		/// <summary> Png画像画像からリストオブジェクトデータを読み出す </summary>
-		/// <param name="_path">保存先のパス</param>
-		public static List<T> LoadList<T>(string _path) => ListFromJson<T>(TextureToJson(ReadPng(_path)));
+		public static T Load<T>(string _path) => KMJson.FromJson<T>(TextureToJson(ReadPng(_path)));
 	}
 }

@@ -27,9 +27,9 @@ namespace FGOManager.Register
 		public CommandCardEvent OnValueChanged;
 		public Setup_ic Setup = new Setup_ic();
 
-		public int Q { get { return m_DpQ.Dropdown.value; } }
-		public int A { get { return m_DpA.Dropdown.value; } }
-		public int B { get { return 2 - Q - A; } }
+		private int Q { get { return m_DpQ.Dropdown.value; } }
+		private int A { get { return m_DpA.Dropdown.value; } }
+		private int B { get { return 2 - Q - A; } }
 		public CommandCard.Type_e CommandCardType
 		{
 			get { return (CommandCard.Type_e)((Q > 0 ? CommandCard_e.Quick : 0) | (A > 0 ? CommandCard_e.Arts : 0) | (B > 0 ? CommandCard_e.Buster : 0)); }
@@ -84,7 +84,7 @@ namespace FGOManager.Register
 		public void ChangeQ()
 		{
 			m_DpA.Dropdown.ClearOptions();
-			m_DpA.Dropdown.AddOptions((new int[3 - Q]).Select((_, i) => (i + 1).ToString()).ToList());
+			m_DpA.Dropdown.AddOptions(Enumerable.Range(0, 3 - Q).Select(i => (i + 1).ToString()).ToList());
 			m_TextB.text = (B + 1).ToString();
 			CommandCard.Type = CommandCardType;
 			OnValueChanged?.Invoke(CommandCard);
@@ -93,7 +93,7 @@ namespace FGOManager.Register
 		public void ChangeA()
 		{
 			m_DpQ.Dropdown.ClearOptions();
-			m_DpQ.Dropdown.AddOptions((new int[3 - A]).Select((_, i) => (i + 1).ToString()).ToList());
+			m_DpQ.Dropdown.AddOptions(Enumerable.Range(0, 3 - A).Select(i => (i + 1).ToString()).ToList());
 			m_TextB.text = (B + 1).ToString();
 			CommandCard.Type = CommandCardType;
 			OnValueChanged?.Invoke(CommandCard);

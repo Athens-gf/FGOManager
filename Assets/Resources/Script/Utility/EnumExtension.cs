@@ -4,19 +4,15 @@ using System.Linq;
 
 namespace KMUtility
 {
-	/// <summary>
-	/// Enumに文字情報を付与したいときに記述する．
-	/// </summary>
+	/// <summary> Enumに文字情報を付与したいときに記述する． </summary>
 	[AttributeUsage(AttributeTargets.Field)]
 	public class EnumTextAttribute : Attribute
 	{
-		public EnumTextAttribute(string text) { Text = text; }
 		public string Text { get; set; }
+		public EnumTextAttribute(string _text) { Text = _text; }
 	}
 
-	/// <summary>
-	/// Enum型から文字列情報を取得する拡張クラス
-	/// </summary>
+	/// <summary> Enum型拡張クラス </summary>
 	public static class ExEnum
 	{
 		private static Dictionary<Enum, string> m_textCache = new Dictionary<Enum, string>();

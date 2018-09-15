@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using KMUtility;
 using KMUtility.Unity;
 using UnityEngine.Events;
+using UnityEngine;
 
 namespace FGOManager
 {
@@ -211,9 +214,10 @@ namespace FGOManager
 	#endregion
 
 	/// <summary> ランク管理クラス </summary>
-	[Serializable]
 	public class Rank
 	{
+		private sbyte m_Plus = 0;
+
 		public enum Type_e
 		{
 			EX = 2,
@@ -224,14 +228,31 @@ namespace FGOManager
 			E = -3,
 		}
 
-		/// <summary>  </summary>
-		public Type_e Type = Type_e.B;
-		/// <summary>  </summary>
-		public sbyte Plus = 0;
-		/// <summary>  </summary>
-		public string Other = "";
+		/// <summary> 段階 </summary>
+		public Type_e Type { get; set; } = Type_e.B;
+		/// <summary> ＋の個数 </summary>
+		public sbyte Plus
+		{
+			get { return m_Plus; }
+			set { if (value >= -1 && value <= 2) m_Plus = value; }
+		}       /// <summary> その他のときの文字列 </summary>
+		public string Other { get; set; } = "";
 
 		public override string ToString() => (Other != "") ? Other : (Type.GetText() + ((Plus >= 0) ? new string('+', Plus) : "-"));
+
+		public static Rank FromString(string _str)
+		{
+			var str = _str.Remove("+").Remove("-").Replace("?", "？");
+			var type = ExEnum.GetEnumIter<Type_e>()
+				.Where(x => x.GetText() == str)
+				.FirstOrDefault(Type_e.B);
+			return new Rank
+			{
+				Type = type,
+				Plus = (sbyte)(_str.Count('+') - _str.Count('-')),
+				Other = str == type.GetText() ? "" : str
+			};
+		}
 	}
 	[Serializable] public class RankEvent : UnityEvent<Rank> { }
 
@@ -240,8 +261,22 @@ namespace FGOManager
 	[Serializable]
 	public class KV_MaterialNumber : KeyAndValue<Material_e, int> { }
 
-	public static class FGOData
+
+	public interface ICharacter
 	{
+		/// <summary> 名称 </summary>
+		string Name { get; set; }
+		/// <summary> サーヴァントかどうか </summary>
+		bool IsServant { get; }
+		/// <summary> 持っている属性 </summary>
+		List<string> Tags { get; }
+	}
+
+	public static partial class FGOData
+	{
+		public static readonly string[] DefaultCharacteristics = new string[] { "", "竜", "猛獣", "人型", "人間",
+			"ローマ", "死霊", "悪魔", "魔性", "超巨大", "アルトリア顔", "アーサー", "愛する者", "王", "ギリシャ神話系男性", "人類の脅威", "エヌマ・エリシュ" };
+
 		/// <summary> コマンドカードの攻撃力補正値を取得 </summary>
 		/// <param name="_type">カード種別</param>
 		/// <param name="_order">何番目か(1番目は1)</param>

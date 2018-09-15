@@ -1,16 +1,21 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using KMUtility;
 using KMUtility.Math;
+using System.Runtime.Serialization;
 
 namespace FGOManager
 {
+	#region 要素
 	/// <summary> 方針 </summary>
-	[Serializable]
 	public class Policy
 	{
+		private Type_e m_Type = Type_e.Neutral;
+		private string m_OtherStr = "";
+
 		public enum Type_e
 		{
 			[EnumText("秩序")] Law = 0,
@@ -21,17 +26,34 @@ namespace FGOManager
 		}
 
 		/// <summary> 方針種別 </summary>
-		public Type_e Type = Type_e.Neutral;
+		public Type_e Type
+		{
+			get { return m_Type; }
+			set
+			{
+				m_Type = value;
+				if (value != Type_e.Other) m_OtherStr = "";
+			}
+		}
 		/// <summary> 方針が「Other」だったときの文字列 </summary>
-		public string OtherStr = "";
-
+		public string OtherStr
+		{
+			get { return m_OtherStr; }
+			set
+			{
+				m_OtherStr = value;
+				if (value != "") m_Type = Type_e.Other;
+			}
+		}
 		public override string ToString() => Type == Type_e.Other ? OtherStr : Type.GetText();
 	}
 
 	/// <summary> 性格 </summary>
-	[Serializable]
 	public class Personality
 	{
+		private Type_e m_Type = Type_e.Moderate;
+		private string m_OtherStr = "";
+
 		public enum Type_e
 		{
 			[EnumText("善")] Right = 0,
@@ -42,15 +64,30 @@ namespace FGOManager
 		}
 
 		/// <summary> 性格種別 </summary>
-		public Type_e Type = Type_e.Moderate;
+		public Type_e Type
+		{
+			get { return m_Type; }
+			set
+			{
+				m_Type = value;
+				if (value != Type_e.Other) m_OtherStr = "";
+			}
+		}
 		/// <summary> 性格が「Other」だったときの文字列 </summary>
-		public string OtherStr = "";
-
+		public string OtherStr
+		{
+			get { return m_OtherStr; }
+			set
+			{
+				m_OtherStr = value;
+				if (value != "") m_Type = Type_e.Other;
+			}
+		}
 		public override string ToString() => Type == Type_e.Other ? OtherStr : Type.GetText();
 	}
 
 	/// <summary> コマンドカード </summary>
-	[Serializable]
+	[DataContract]
 	public class CommandCard
 	{
 		public enum Type_e
@@ -64,54 +101,47 @@ namespace FGOManager
 		}
 
 		/// <summary> コマンドカードデータ構造体 </summary>
-		[Serializable]
+		[DataContract]
 		public class Data
 		{
-			/// <summary> ヒット数 </summary>
-			public sbyte Hit = 5;
+			[DataMember] private sbyte m_Hit = 5;
 
 			/// <summary> 対応種類 </summary>
-			public CommandCard_e Type { get; private set; }
+			[DataMember] public CommandCard_e Type { get; private set; }
+
+			/// <summary> ヒット数 </summary>
+			public sbyte Hit
+			{
+				get { return m_Hit; }
+				set { if (m_Hit > 0) m_Hit = value; }
+			}
 
 			public Data(CommandCard_e _type) { Type = _type; }
+
+			public override string ToString() => $"{Type.ToString()} Hit;{Hit}";
 		}
 
-		[SerializeField]
-		private Data m_DataQuick = new Data(CommandCard_e.Quick), m_DataArts = new Data(CommandCard_e.Arts), m_DataBuster = new Data(CommandCard_e.Buster);
-		[SerializeField]
-		private Data m_DataExtra = new Data(CommandCard_e.Extra), m_DataNoblePhantasm = new Data(CommandCard_e.NoblePhantasm);
+		[DataMember] private Dictionary<CommandCard_e, Data> m_Data = null;
 
 		/// <summary> コマンドカード種別 </summary>
-		public Type_e Type = Type_e.Q3A1B1;
+		[DataMember] public Type_e Type { get; set; } = Type_e.Q3A1B1;
 
 		/// <summary> コマンドカードデータ取得インデクサ </summary>
-		public Data this[CommandCard_e _key]
+		public Data this[CommandCard_e _key] { get { return m_Data[_key]; } }
+
+		public CommandCard()
 		{
-			get
-			{
-				switch (_key)
-				{
-					case CommandCard_e.Quick:
-						return m_DataQuick;
-					case CommandCard_e.Arts:
-						return m_DataArts;
-					case CommandCard_e.Buster:
-						return m_DataBuster;
-					case CommandCard_e.Extra:
-						return m_DataExtra;
-					case CommandCard_e.NoblePhantasm:
-						return m_DataNoblePhantasm;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
+			m_Data = ExEnum.GetEnumIter<CommandCard_e>().ToDictionary(cc => cc, cc => new Data(cc));
 		}
+
+		public override string ToString()
+			=> $"{Type.ToString()}, {this[CommandCard_e.Quick]} {this[CommandCard_e.Arts]} {this[CommandCard_e.Buster]} {this[CommandCard_e.Extra]} {this[CommandCard_e.NoblePhantasm]}";
 	}
 
 	[Serializable] public class CommandCardEvent : UnityEvent<CommandCard> { }
 
 	/// <summary> パラメーター </summary>
-	[Serializable]
+	[DataContract]
 	public class Parameter
 	{
 		public enum Type_e
@@ -124,20 +154,20 @@ namespace FGOManager
 			[EnumText("宝具")] NoblePhantasm = 5,
 		}
 
-		[SerializeField]
-		private Rank[] m_Ranklist = new Rank[6];
+		[DataMember] private Dictionary<Type_e, Rank> m_Ranklist = null;
 
 		/// <summary> インデクサ </summary>
-		public Rank this[Type_e _key] { get { return m_Ranklist[(int)_key]; } set { m_Ranklist[(int)_key] = value; } }
+		public Rank this[Type_e _key] { get { return m_Ranklist[_key]; } set { m_Ranklist[_key] = value; } }
 
 		/// <summary> DR補正値 </summary>
 		public decimal CorrectionDR => 0.7m - (decimal)this[Type_e.Magic].Type / 10m - this[Type_e.Magic].Plus * 0.025m;
 
 		public Parameter()
 		{
-			for (int i = 0; i < 6; i++)
-				m_Ranklist[i] = new Rank();
+			m_Ranklist = ExEnum.GetEnumIter<Type_e>().ToDictionary(t => t, _ => new Rank());
 		}
+
+		public override string ToString() => m_Ranklist.Select(rl => $"{rl.Key.GetText()}:{rl.Value}").Aggregate((s0, s1) => $"{s0} {s1}");
 
 		/// <summary> パラメーター補正値を取得する </summary>
 		/// <param name="_type">パラメーター種類</param>
@@ -158,37 +188,45 @@ namespace FGOManager
 			if (_isInitialSR) cor /= 2;
 			return 1 + cor;
 		}
+
+		public List<string> Tags => ExEnum.GetEnumIter<Type_e>().Select(t => $"{t.GetText()}:{this[t]}").ToList();
 	}
 
 	/// <summary> 宝具 </summary>
-	[Serializable]
+	[DataContract]
 	public class NoblePhantasm
 	{
+		[DataMember] private CommandCard_e m_CardType = CommandCard_e.Buster;
+
 		/// <summary> 宝具名称 </summary>
-		public string Name = "";
+		[DataMember] public string Name { get; set; } = "";
 		/// <summary> 宝具名称ふりがな </summary>
-		public string Phonetic = "";
+		[DataMember] public string Phonetic { get; set; } = "";
 
 		/// <summary> 宝具種別 </summary>
-		public string Kind = "";
+		[DataMember] public string Kind { get; set; } = "";
 
 		/// <summary> 宝具色 </summary>
-		public CommandCard_e CardType = CommandCard_e.Buster;
-
+		public CommandCard_e CardType
+		{
+			get { return m_CardType; }
+			set { if (value <= CommandCard_e.Buster) m_CardType = value; }
+		}
 		/// <summary> 宝具ランク </summary>
-		public Rank Rank = new Rank();
+		[DataMember] public Rank Rank { get; private set; } = new Rank();
 
 		/// <summary> 強化前効果 </summary>
-		public List<Effect> BaseEffects = new List<Effect>();
+		[DataMember] public List<Effect> BaseEffects { get; private set; } = new List<Effect>();
 		/// <summary> 強化後効果 </summary>
-		public List<Effect> EnhancedEffects = new List<Effect>();
+		[DataMember] public List<Effect> EnhancedEffects { get; private set; } = new List<Effect>();
 
 		/// <summary> ヒット数取得Func </summary>
-		public Func<sbyte> GetHit { get; set; } = null;
+		[IgnoreDataMember] public Func<sbyte> GetHit { get; set; } = null;
 
 		/// <summary> ヒット数 </summary>
 		public sbyte HitNum { get { return GetHit == null ? (sbyte)0 : GetHit(); } }
 
+		public override string ToString() => Name;
 
 		/// <summary> 強化状態に応じた効果を取得する </summary>
 		/// <param name="_isEnhanced">強化されているかどうか</param>
@@ -197,22 +235,31 @@ namespace FGOManager
 	}
 
 	/// <summary> スキル </summary>
-	[Serializable]
+	[DataContract]
 	public class Skill
 	{
+		[DataMember] private byte m_CT = 7;
+
 		/// <summary> スキル名称 </summary>
-		public string Name = "";
+		[DataMember] public string Name { get; set; } = "";
+		/// <summary> スキル名称ふりがな </summary>
+		[DataMember] public string Phonetic { get; set; } = "";
 
 		/// <summary> スキルランク </summary>
-		public Rank Rank = new Rank();
+		[DataMember] public Rank Rank { get; private set; } = new Rank();
 
 		/// <summary> CT </summary>
-		public byte CT = 7;
-
+		public byte CT
+		{
+			get { return m_CT; }
+			set { if (value > 3) m_CT = value; }
+		}
 		/// <summary> 強化前効果 </summary>
-		public List<Effect> BaseEffects = new List<Effect>();
+		[DataMember] public List<Effect> BaseEffects { get; private set; } = new List<Effect>();
 		/// <summary> 強化後効果 </summary>
-		public List<Effect> EnhancedEffects = new List<Effect>();
+		[DataMember] public List<Effect> EnhancedEffects { get; private set; } = new List<Effect>();
+
+		public override string ToString() => Name;
 
 
 		/// <summary> 強化状態に応じた効果を取得する </summary>
@@ -222,103 +269,105 @@ namespace FGOManager
 	}
 
 	/// <summary> クラススキル </summary>
-	[Serializable]
+	[DataContract]
 	public class ClassSkill
 	{
 		/// <summary> スキル名称 </summary>
-		public string Name = "";
+		[DataMember] public string Name { get; set; } = "";
+		/// <summary> スキル名称ふりがな </summary>
+		[DataMember] public string Phonetic { get; set; } = "";
 
 		/// <summary> スキルランク </summary>
-		public Rank Rank = new Rank();
+		[DataMember] public Rank Rank { get; private set; } = new Rank();
 
 		/// <summary> 効果 </summary>
-		public List<Effect> Effects = new List<Effect>();
+		[DataMember] public List<Effect> Effects { get; private set; } = new List<Effect>();
 	}
+	#endregion
 
 	[Serializable] public class ServantBaseEvent : UnityEvent<ServantBase> { }
 	/// <summary> サーヴァント基本データクラス </summary>
-	[Serializable]
-	public class ServantBase
+	[DataContract]
+	public class ServantBase : ICharacter
 	{
 		#region Data
+		[DataMember] private int m_No = 0;
+		[DataMember] private int m_Rare = 5;
+		[DataMember] private decimal m_NA = 0;
+		[DataMember] private decimal m_ND = 3;
+
 		/// <summary> サーヴァントNo. </summary>
-		public int No = 0;
-
-		/// <summary> サーヴァント名称 </summary>
-		public string Name = "";
-
+		public int No { get { return m_No; } set { if (value > 0) m_No = value; } }
+		/// <summary> 名称 </summary>
+		[DataMember] public string Name { get; set; } = "";
 		/// <summary> クラス </summary>
-		public Class_e Class = Class_e.Saber;
-
+		[DataMember] public Class_e Class { get; set; } = Class_e.Saber;
 		/// <summary> レア度(☆0～5) </summary>
-		public int Rare = 5;
-
+		public int Rare { get { return m_Rare; } set { if (value >= 0 && value <= 5) m_Rare = value; } }
 		/// <summary> 初期ATK </summary>
-		public int FirstATK = 0;
+		[DataMember] public int FirstATK { get; set; } = 0;
 		/// <summary> 最終ATK </summary>
-		public int MaxATK = 0;
-
+		[DataMember] public int MaxATK { get; set; } = 0;
 		/// <summary> コマンドカード </summary>
-		public CommandCard CommandCard = new CommandCard();
-
+		[DataMember] public CommandCard CommandCard { get; set; } = new CommandCard();
 		/// <summary> N/A(攻撃時のNP上昇基礎値) </summary>
-		public decimal NA = 0;
+		public decimal NA { get { return m_NA; } set { if (value > 0) m_NA = value; } }
 		/// <summary> N/D(攻撃を受けた際のNP上昇基礎値) </summary>
-		public decimal ND = 3;
-
+		public decimal ND { get { return m_ND; } set { if (value > 0) m_ND = value; } }
 		/// <summary> SR計算が初期補正かどうか </summary>
-		public bool IsInitialSR = false;
+		[DataMember] public bool IsInitialSR { get; set; } = false;
 		/// <summary> ATK算出が魔術タイプかどうか </summary>
-		public bool IsMagicalType = false;
+		[DataMember] public bool IsMagicalType { get; set; } = false;
 		// キャスターのうち、メフィストフェレス、エリザベート〔ハロウィン〕、バベッジ、エジソン、ジェロニモ、ジークを除くすべて
 		// マリー（騎）、マルタ（騎）、ステンノ、マタ・ハリ、カーミラ、清姫（狂）、ニコラ・テスラ、アルジュナ、オジマンディアス、イシュタル（弓）、BB（SR）、殺生院キアラ、ホームズ、ニトクリス（殺）、刑部姫、アビゲイル、葛飾北斎、セミラミス、浅上藤乃、イヴァン雷帝、BB（SSR）
 
 		/// <summary> 天地人相性 </summary>
-		public Attribute_e Attribute = Attribute_e.Man;
+		[DataMember] public Attribute_e Attribute { get; set; } = Attribute_e.Man;
 
 		/// <summary> 方針 </summary>
-		public Policy Policy = new Policy();
+		[DataMember] public Policy Policy { get; set; } = new Policy();
 
 		/// <summary> 性格 </summary>
-		public Personality Personality = new Personality();
+		[DataMember] public Personality Personality { get; set; } = new Personality();
 
 		/// <summary> 性別 </summary>
-		public Sex_e Sex = Sex_e.Female;
+		[DataMember] public Sex_e Sex { get; set; } = Sex_e.Female;
 
 		/// <summary> 成長タイプ </summary>
-		public StatusTrend_e StatusTrend = StatusTrend_e.ATK;
+		[DataMember] public StatusTrend_e StatusTrend { get; set; } = StatusTrend_e.ATK;
 
 		/// <summary> パラメーター </summary>
-		public Parameter Parameter = new Parameter();
+		[DataMember] public Parameter Parameter = new Parameter();
+
 		//		巌窟王の幸運はB～A++相当（正確なランクは不明）
 		//		エジソンの耐久・魔力EXはE相当
 		//		エルキドゥのパラメーター？はB相当
 		//		“山の翁”のパラメーターは表記よりも1ランクずつ高い（筋力A耐久EX敏捷A魔力D幸運D相当）
 
 		/// <summary> 特性 </summary>
-		public List<string> Characteristic = new List<string> { "人型" };
+		[DataMember] public List<string> Characteristic { get; private set; } = new List<string> { "人型", "エヌマ・エリシュ" };
 
 		/// <summary> 宝具データ </summary>
-		public NoblePhantasm NoblePhantasm = new NoblePhantasm();
+		[DataMember] public NoblePhantasm NoblePhantasm { get; private set; } = new NoblePhantasm();
 
 		/// <summary> 保有スキルデータ </summary>
-		public Skill[] Skills = new Skill[3];
+		[DataMember] public Skill[] Skills { get; private set; } = new Skill[3];
 
 		/// <summary> クラススキルデータ </summary>
-		public List<ClassSkill> ClassSkills = new List<ClassSkill>();
+		[DataMember] public List<ClassSkill> ClassSkills { get; private set; } = new List<ClassSkill>();
 
 		/// <summary> 霊基再臨素材 </summary>
-		public MaterialNumber[] SecondComingMaterials = new MaterialNumber[4];
+		[DataMember] public MaterialNumber[] SecondComingMaterials { get; private set; } = new MaterialNumber[4];
 		/// <summary> スキル育成素材 </summary>
-		public MaterialNumber[] SkillMaterials = new MaterialNumber[9];
+		[DataMember] public MaterialNumber[] SkillMaterials { get; private set; } = new MaterialNumber[9];
 
 		/// <summary> 絆礼装 </summary>
-		public ConceptDress BondDress = new ConceptDress();
+		[DataMember] public ConceptDress BondDress { get; private set; } = new ConceptDress();
 
 		/// <summary> イラストレーター </summary>
-		public string Illustrator = "";
+		[DataMember] public string Illustrator { get; set; } = "";
 		/// <summary> 声優 </summary>
-		public string CV = "";
+		[DataMember] public string CV { get; set; } = "";
 
 		#endregion
 
@@ -636,6 +685,19 @@ namespace FGOManager
 				return (int)(baseATK * CorAtk);
 			}
 		}
+
+		public bool IsServant => true;
+
+		public virtual List<string> Tags => Characteristic
+			.AddRetern(Name)
+			.AddRetern(Class.GetText())
+			.AddRetern(Attribute.GetText())
+			.AddRetern(Policy.ToString())
+			.AddRetern(Personality.ToString())
+			.AddRetern(Sex.GetText())
+			.AddRetern(Parameter.Tags)
+			.ToList();
+
 
 
 		#endregion

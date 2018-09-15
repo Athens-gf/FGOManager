@@ -75,6 +75,7 @@ namespace FGOManager.Register
 
 		public List<ServantNode> ServantNodeList { get; private set; } = new List<ServantNode>();
 		public ServantNode EditServant { get; private set; } = null;
+		private bool IsSetting { get; set; } = false;
 
 		private void Start()
 		{
@@ -97,7 +98,9 @@ namespace FGOManager.Register
 
 		public void OnSelect(ServantNode _servant)
 		{
-			if (EditServant?.Servant.Name == "" || EditServant?.Servant.Name == NewServant)
+			if (EditServant != null && EditServant == _servant) return;
+			IsSetting = true;
+			if (Servant?.Name == "" || Servant?.Name == NewServant)
 				Delete();
 			EditServant = _servant;
 			Setup?.No?.Invoke(No);
@@ -112,7 +115,7 @@ namespace FGOManager.Register
 			SetPolicyOption();
 			Setup?.Policy?.Invoke(m_DdPolicy.options.FindIndex(o => o.text == Policy.ToString()));
 			SetPersonalityOption();
-			Setup?.Personality?.Invoke(m_DdPolicy.options.FindIndex(o => o.text == Policy.ToString()));
+			Setup?.Personality?.Invoke(m_DdPersonality.options.FindIndex(o => o.text == Personality.ToString()));
 
 			SetIllustratorOption();
 			Setup?.Illustrator?.Invoke(Illustrator);
@@ -129,9 +132,10 @@ namespace FGOManager.Register
 			Setup?.RankLuck?.Invoke(ParaLuck);
 			Setup?.RankNoblePhantasm?.Invoke(ParaNoblePhantasm);
 
-			m_CharacteristicSetter.Characteristic = EditServant?.Servant.Characteristic;
+			m_CharacteristicSetter.Characteristic = Servant?.Characteristic;
 			m_CharacteristicSetter.SetupNodes();
-			m_MaterialsSetter.Setup(EditServant?.Servant.SecondComingMaterials, EditServant?.Servant.SkillMaterials);
+			m_MaterialsSetter.AllClear();
+			m_MaterialsSetter.Setup(Servant?.SecondComingMaterials, Servant?.SkillMaterials);
 
 			OnChangeHP();
 			OnChangeATK();
@@ -139,6 +143,7 @@ namespace FGOManager.Register
 			OnChangeSW();
 			OnChangeNA();
 			Setup?.ND?.Invoke(ND);
+			IsSetting = false;
 		}
 
 		public void Save()
@@ -153,10 +158,12 @@ namespace FGOManager.Register
 					List<ServantBase> saveSev = servants.Where(s => s.No > i * 10 && s.No <= (i + 1) * 10).ToList();
 					string filePath = $"Data/sev{i}.png";
 					if (saveSev.Any())
-						SaveJsonPng.SaveList(filePath, saveSev);
-					filePaths.Add(filePath);
+					{
+						SaveJsonPng.Save(filePath, saveSev);
+						filePaths.Add(filePath);
+					}
 				}
-				SaveJsonPng.SaveList(GameData.SavePath, filePaths);
+				SaveJsonPng.Save(GameData.SavePath, filePaths);
 			}
 		}
 
@@ -168,13 +175,16 @@ namespace FGOManager.Register
 				return;
 			int no = 1;
 			for (; ServantNodeList.Exists(sn => sn.Servant.No == no); no++) ;
-			OnSelect(CreateNode(new ServantBase { Name = NewServant, No = no }));
+			ServantBase newServant = new ServantBase { Name = NewServant, No = no };
+			GameData.Instance.Servants.Add(newServant);
+			OnSelect(CreateNode(newServant));
+			OnChangeMaterials();
 		}
 
 		public void Copy()
 		{
-			if (!EditServant || EditServant.Servant.Name == "" || EditServant.Servant.Name == NewServant) return;
-			var servant = EditServant.Servant.DeepCopy();
+			if (!EditServant || Servant.Name == "" || Servant.Name == NewServant) return;
+			var servant = Servant.DeepCopy();
 			for (servant.No = 1; ServantNodeList.Exists(sn => sn.Servant.No == servant.No); servant.No++) ;
 			OnSelect(CreateNode(servant));
 		}
@@ -188,111 +198,135 @@ namespace FGOManager.Register
 		}
 		#endregion
 
+		public ServantBase Servant => EditServant?.Servant;
+
 		public int No
 		{
-			get { return EditServant?.Servant.No ?? 1; }
+			get { return Servant?.No ?? 1; }
 			set
 			{
-				if (!EditServant) return;
+				if (!EditServant || Servant.No == value) return;
 				int val = value;
-				for (; ServantNodeList.ReternRemove(EditServant).ToList().Exists(sn => sn.Servant.No == val); val++) ;
-				EditServant.Servant.No = val;
+				for (; ServantNodeList.RemoveRetern(EditServant).ToList().Exists(sn => sn.Servant.No == val); val++) ;
+				Servant.No = val;
 				EditServant.SetName();
-				if (val != value)
-					Setup?.No?.Invoke(No);
+				Setup?.No?.Invoke(No);
 				m_ScrollList?.OrderSort(c => c.GetComponent<ServantNode>().Servant.No);
 			}
 		}
 
 		public string Name
 		{
-			get { return EditServant?.Servant.Name ?? ""; }
+			get { return Servant?.Name ?? ""; }
 			set
 			{
-				if (!EditServant) return;
-				EditServant.Servant.Name = value;
+				if (!EditServant || Name == value) return;
+				Servant.Name = value;
+				Setup?.Name?.Invoke(Name);
 				EditServant.SetName();
 			}
 		}
 
 		public Class_e Class
 		{
-			get { return EditServant?.Servant.Class ?? Class_e.Beast1; }
+			get { return Servant?.Class ?? Class_e.Beast1; }
 			set
 			{
-				if (!EditServant) return;
-				EditServant.Servant.Class = value;
+				if (!EditServant || Class == value) return;
+				Servant.Class = value;
+				Setup?.Class?.Invoke((int)Class);
 				OnChangeHP();
 				OnChangeATK();
 				OnChangeSR();
 				OnChangeSW();
 				OnChangeNA();
+				OnChangeMaterials();
 			}
 		}
 		public void ChangeClass(int _value) => Class = (Class_e)_value;
 
 		public int Rare
 		{
-			get { return EditServant?.Servant.Rare ?? 0; }
+			get { return Servant?.Rare ?? 0; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Rare = value;
+				Servant.Rare = value;
 				OnChangeHP();
 				OnChangeATK();
+				OnChangeMaterials();
 			}
 		}
 
 		public CommandCard CommandCard
 		{
-			get { return EditServant?.Servant.CommandCard ?? new CommandCard { Type = CommandCard.Type_e.Q1A1B3 }; }
+			get { return Servant?.CommandCard ?? new CommandCard { Type = CommandCard.Type_e.Q1A1B3 }; }
 			set
 			{
-				if (!EditServant) return;
-				EditServant.Servant.CommandCard = value;
+				if (!EditServant || CommandCard.ToString() == value.ToString()) return;
+				Servant.CommandCard = value;
+				Setup?.CommandCard?.Invoke(CommandCard);
 				OnChangeNA();
 			}
 		}
 
 		public int FirstATK
 		{
-			get { return EditServant?.Servant.FirstATK ?? 0; }
+			get { return Servant?.FirstATK ?? 0; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.FirstATK = value;
-				OnChange?.MaxATKMin?.Invoke(EditServant.Servant.FirstATK + 1);
+				Servant.FirstATK = value;
+				OnChange?.MaxATKMin?.Invoke(Servant.FirstATK + 1);
 			}
 		}
 
 		public int MaxATK
 		{
-			get { return EditServant?.Servant.MaxATK ?? 0; }
+			get { return Servant?.MaxATK ?? 0; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.MaxATK = value;
-				OnChange?.FirstATKMax?.Invoke(EditServant.Servant.MaxATK - 1);
+				Servant.MaxATK = value;
+				OnChange?.FirstATKMax?.Invoke(Servant.MaxATK - 1);
 			}
 		}
 
-		public Sex_e Sex { get { return EditServant?.Servant.Sex ?? Sex_e.Female; } set { if (EditServant) EditServant.Servant.Sex = value; } }
+		public Sex_e Sex
+		{
+			get { return Servant?.Sex ?? Sex_e.Female; }
+			set
+			{
+				if (!EditServant || Sex == value) return;
+				Servant.Sex = value;
+				Setup?.Sex?.Invoke((int)Sex);
+			}
+		}
 		public void ChangeSex(int _value) => Sex = (Sex_e)_value;
 
 		public StatusTrend_e StatusTrend
 		{
-			get { return EditServant?.Servant.StatusTrend ?? StatusTrend_e.Balance; }
+			get { return Servant?.StatusTrend ?? StatusTrend_e.Balance; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.StatusTrend = value;
+				Servant.StatusTrend = value;
 				OnChangeHP();
 				OnChangeATK();
 			}
 		}
 		public void ChangeStatusTrend(int _value) => StatusTrend = _value == 0 ? StatusTrend_e.Altria_Lily : (StatusTrend_e)(3 - _value);
 
-		public Attribute_e Attribute { get { return EditServant?.Servant.Attribute ?? Attribute_e.Man; } set { if (EditServant) EditServant.Servant.Attribute = value; } }
+		public Attribute_e Attribute
+		{
+			get { return Servant?.Attribute ?? Attribute_e.Man; }
+			set
+			{
+				if (!EditServant || Attribute == value) return;
+				Servant.Attribute = value;
+				Setup?.Attribute?.Invoke((int)Attribute);
+			}
+		}
 		public void ChangeAttribute(int _value) => Attribute = (Attribute_e)_value;
 
 		public void AddOtherOption(string _str, Dropdown _dropdown)
@@ -311,15 +345,15 @@ namespace FGOManager.Register
 		public void SetOption<T>(Dropdown _dropdown, string _current, T _remove,
 			Func<T, string> _change, Func<ServantNode, string> _exsit, params string[] defaultOptions) where T : struct
 		{
-			List<string> options = ExEnum.GetEnumIter<T>().ReternRemove(_remove).Select(t => _change(t))
-				.ReternAppend(defaultOptions).Distinct().Union(ServantNodeList.Select(sn => _exsit(sn)).Distinct()).ToList();
+			List<string> options = ExEnum.GetEnumIter<T>().RemoveRetern(_remove).Select(t => _change(t))
+				.AddRetern(defaultOptions).Distinct().Union(ServantNodeList.Select(sn => _exsit(sn)).Distinct()).ToList();
 			SetOption(_dropdown, _current, options);
 		}
 
 		public Policy Policy
 		{
-			get { return EditServant?.Servant.Policy ?? new Policy { Type = Policy.Type_e.Neutral }; }
-			set { if (EditServant) EditServant.Servant.Policy = value; }
+			get { return Servant?.Policy ?? new Policy { Type = Policy.Type_e.Neutral }; }
+			set { if (EditServant) Servant.Policy = value; }
 		}
 		public void ChangePolicy(int _value)
 		{
@@ -333,8 +367,8 @@ namespace FGOManager.Register
 
 		public Personality Personality
 		{
-			get { return EditServant?.Servant.Personality ?? new Personality { Type = Personality.Type_e.Moderate }; }
-			set { if (EditServant) EditServant.Servant.Personality = value; }
+			get { return Servant?.Personality ?? new Personality { Type = Personality.Type_e.Moderate }; }
+			set { if (EditServant) Servant.Personality = value; }
 		}
 		public void ChangePersonality(int _value)
 		{
@@ -348,22 +382,22 @@ namespace FGOManager.Register
 
 		public bool IsInitialSR
 		{
-			get { return EditServant?.Servant.IsInitialSR ?? false; }
+			get { return Servant?.IsInitialSR ?? false; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.IsInitialSR = value;
+				Servant.IsInitialSR = value;
 				OnChangeSR();
 			}
 		}
 
 		public bool IsMagicType
 		{
-			get { return EditServant?.Servant.IsMagicalType ?? false; }
+			get { return Servant?.IsMagicalType ?? false; }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.IsMagicalType = value;
+				Servant.IsMagicalType = value;
 				OnChangeATK();
 			}
 		}
@@ -371,113 +405,290 @@ namespace FGOManager.Register
 		#region パラメータ
 		public Rank ParaPhysics
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.Physics] ?? new Rank(); }
+			get { return Servant?.Parameter[Parameter.Type_e.Physics] ?? new Rank(); }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Parameter[Parameter.Type_e.Physics] = value;
+				Servant.Parameter[Parameter.Type_e.Physics] = value;
 				OnChangeATK();
 			}
 		}
 		public Rank ParaToughness
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.Toughness] ?? new Rank(); }
+			get { return Servant?.Parameter[Parameter.Type_e.Toughness] ?? new Rank(); }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Parameter[Parameter.Type_e.Toughness] = value;
+				Servant.Parameter[Parameter.Type_e.Toughness] = value;
 				OnChangeHP();
 			}
 		}
 		public Rank ParaAgility
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.Agility] ?? new Rank(); }
+			get { return Servant?.Parameter[Parameter.Type_e.Agility] ?? new Rank(); }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Parameter[Parameter.Type_e.Agility] = value;
+				Servant.Parameter[Parameter.Type_e.Agility] = value;
 				OnChangeATK();
 				OnChangeSR();
 			}
 		}
 		public Rank ParaMagic
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.Magic] ?? new Rank(); }
+			get { return Servant?.Parameter[Parameter.Type_e.Magic] ?? new Rank(); }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Parameter[Parameter.Type_e.Magic] = value;
+				Servant.Parameter[Parameter.Type_e.Magic] = value;
 				OnChangeATK();
 				OnChangeNA();
 			}
 		}
 		public Rank ParaLuck
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.Luck] ?? new Rank(); }
+			get { return Servant?.Parameter[Parameter.Type_e.Luck] ?? new Rank(); }
 			set
 			{
 				if (!EditServant) return;
-				EditServant.Servant.Parameter[Parameter.Type_e.Luck] = value;
+				Servant.Parameter[Parameter.Type_e.Luck] = value;
 				OnChangeSW();
 			}
 		}
 		public Rank ParaNoblePhantasm
 		{
-			get { return EditServant?.Servant.Parameter[Parameter.Type_e.NoblePhantasm] ?? new Rank(); }
-			set { if (EditServant) EditServant.Servant.Parameter[Parameter.Type_e.NoblePhantasm] = value; }
+			get { return Servant?.Parameter[Parameter.Type_e.NoblePhantasm] ?? new Rank(); }
+			set { if (EditServant) Servant.Parameter[Parameter.Type_e.NoblePhantasm] = value; }
 		}
 		#endregion
 
-		public decimal NA { get { return EditServant?.Servant.NA ?? 0; } set { if (EditServant) EditServant.Servant.NA = value; } }
-		public decimal ND { get { return EditServant?.Servant.ND ?? 0; } set { if (EditServant) EditServant.Servant.ND = value; } }
+		public decimal NA
+		{
+			get { return Servant?.NA ?? 0; }
+			set
+			{
+				if (!EditServant || NA == value) return;
+				Servant.NA = value;
+				Setup?.ND?.Invoke(ND);
+			}
+		}
+		public decimal ND
+		{
+			get { return Servant?.ND ?? 0; }
+			set
+			{
+				if (!EditServant || ND == value) return;
+				Servant.ND = value;
+				Setup?.ND?.Invoke(ND);
+			}
+		}
 
 		public string Illustrator
 		{
-			get { return EditServant?.Servant.Illustrator ?? ""; }
+			get { return Servant?.Illustrator ?? ""; }
 			set
 			{
-				if (!EditServant) return;
-				EditServant.Servant.Illustrator = value;
+				if (!EditServant || Illustrator == value) return;
+				Servant.Illustrator = value;
 				SetIllustratorOption();
+				SetIllustratorOption();
+				Setup?.Illustrator?.Invoke(Illustrator);
 			}
 		}
 		public void SetIllustratorOption()
-			=> SetOption(m_DdIllustrator, Illustrator, ServantNodeList.Select(sn => sn.Servant.Illustrator).ReternAppend("").Distinct().OrderBy(s => s).ToList());
+			=> SetOption(m_DdIllustrator, Illustrator, ServantNodeList.Select(sn => sn.Servant.Illustrator).AddRetern("").Distinct().OrderBy(s => s).ToList());
 
 		public string CV
 		{
-			get { return EditServant?.Servant.CV ?? ""; }
+			get { return Servant?.CV ?? ""; }
 			set
 			{
-				if (!EditServant) return;
-				EditServant.Servant.CV = value;
+				if (!EditServant || CV == value) return;
+				Servant.CV = value;
 				SetCVOption();
+				SetCVOption();
+				Setup?.CV?.Invoke(CV);
 			}
 		}
-		public void SetCVOption() => SetOption(m_DdCV, CV, ServantNodeList.Select(sn => sn.Servant.CV).ReternAppend("").Distinct().OrderBy(s => s).ToList());
+		public void SetCVOption() => SetOption(m_DdCV, CV, ServantNodeList.Select(sn => sn.Servant.CV).AddRetern("").Distinct().OrderBy(s => s).ToList());
 
 		/// <summary> HP変更時処理、クラス・レア度・ステータス傾向・パラメータ「耐久」が変更されたとき呼び出し </summary>
 		public void OnChangeHP()
 		{
-			OnChange?.FirstHP?.Invoke(EditServant?.Servant.FirstHP ?? 0);
-			OnChange?.MaxHP?.Invoke(EditServant?.Servant.MaxHP ?? 0);
+			OnChange?.FirstHP?.Invoke(Servant?.FirstHP ?? 0);
+			OnChange?.MaxHP?.Invoke(Servant?.MaxHP ?? 0);
 		}
 
 		/// <summary> Atk変更時処理、クラス・レア度・ステータス傾向・パラメータ「筋力・魔力・敏捷」・攻撃タイプが変更されたとき呼び出し </summary>
 		public void OnChangeATK()
 		{
-			OnChange?.FirstATK?.Invoke(EditServant?.Servant.BaseFirstATK ?? 0);
-			OnChange?.MaxATK?.Invoke(EditServant?.Servant.BaseMaxATK ?? 0);
+			OnChange?.FirstATK?.Invoke(Servant?.BaseFirstATK ?? 0);
+			OnChange?.MaxATK?.Invoke(Servant?.BaseMaxATK ?? 0);
 		}
 
 		/// <summary> SR変更時処理、クラス・初期SRかどうか・パラメータ「敏捷」が変更されたとき呼び出し </summary>
-		public void OnChangeSR() => OnChange?.SR?.Invoke(EditServant?.Servant.SR ?? 0);
+		public void OnChangeSR() => OnChange?.SR?.Invoke(Servant?.SR ?? 0);
 
 		/// <summary> SW変更時処理、クラス・パラメータ「幸運」が変更されたとき呼び出し </summary>
-		public void OnChangeSW() => OnChange?.SW?.Invoke(EditServant?.Servant.SW ?? 0);
+		public void OnChangeSW() => OnChange?.SW?.Invoke(Servant?.SW ?? 0);
 
 		/// <summary> NA変更時処理、クラス・Artsカード枚数・Artsヒット数・パラメータ「魔力」が変更されたとき呼び出し </summary>
-		public void OnChangeNA() => OnChange?.NA?.Invoke(EditServant?.Servant.BaseNA ?? 0);
+		public void OnChangeNA() => OnChange?.NA?.Invoke(Servant?.BaseNA ?? 0);
 
+
+		/// <summary> 素材変更時処理 </summary>
+		public void OnChangeMaterials()
+		{
+			if (IsSetting) return;
+			m_MaterialsSetter.AllClear();
+			for (int i = 0; i < 8; i++)
+				foreach (var material in Servant.SkillMaterials[i].Keys)
+					Servant.SkillMaterials[i][material] = 0;
+			for (int i = 0; i < 4; i++)
+				foreach (var material in Servant.SecondComingMaterials[i].Keys)
+					Servant.SecondComingMaterials[i][material] = 0;
+			switch (Class)
+			{
+				case Class_e.Saber:
+				case Class_e.Archer:
+				case Class_e.Lancer:
+				case Class_e.Rider:
+				case Class_e.Caster:
+				case Class_e.Assassin:
+				case Class_e.Berserker:
+					for (int i = 0; i < 6; i++)
+					{
+						int count = (i % 2 == 0 ? Rare < 4 ? Rare + 1 : Rare : (Rare + 1) * 2);
+						if (i < 4)
+							m_MaterialsSetter.AddNode(true, i, Class.GetMaterial(i < 2 ? MaterialType_e.Piece : MaterialType_e.Monument), count);
+						m_MaterialsSetter.AddNode(false, i, Class.GetMaterial(i < 2 ? MaterialType_e.Pyroxene : i < 3 ? MaterialType_e.Manastone : MaterialType_e.SecretStone), count);
+					}
+					break;
+				default:
+					break;
+			}
+		}
+
+
+		public void TextSetting(string _str)
+		{
+			if (EditServant == null) return;
+			var splitBuff = _str.Replace("\t", " ").Remove("\r").Split('\n').Select(x => x.Split(' ').RemoveRetern("").ToList()).ToList();
+			if (_str.StartsWith("No."))
+			{
+				int buff;
+				if (int.TryParse(splitBuff[0][0].Remove("No."), out buff))
+					No = buff;
+
+				Name = splitBuff[1][1];
+
+				Class = ExEnum.GetEnumIter<Class_e>().Where(c => c.GetText() == splitBuff[2][1]).FirstOrDefault();
+
+				buff = 5;
+				if (int.TryParse(splitBuff[2][3], out buff))
+					Rare = buff;
+
+				int q = 0, a = 0, b = 0;
+				int.TryParse(splitBuff[5][0], out q);
+				int.TryParse(splitBuff[5][1], out a);
+				int.TryParse(splitBuff[5][2], out b);
+				CommandCard.Type = (CommandCard.Type_e)((q > 1 ? CommandCard_e.Quick : 0) | (a > 1 ? CommandCard_e.Arts : 0) | (b > 1 ? CommandCard_e.Buster : 0));
+				Setup?.CommandCard?.Invoke(CommandCard);
+			}
+			else if (_str.StartsWith("隠しステータス") || _str.StartsWith("相性"))
+			{
+				if (_str.StartsWith("隠しステータス"))
+					splitBuff = splitBuff.Skip(1).ToList();
+				Attribute = ExEnum.GetEnumIter<Attribute_e>().Where(a => a.GetText() == splitBuff[0][1]).FirstOrDefault();
+
+				Policy.Type = ExEnum.GetEnumIter<Policy.Type_e>().Where(a => a.GetText() == splitBuff[1][2]).FirstOrDefault(Policy.Type_e.Other);
+				if (Policy.Type == Policy.Type_e.Other) Policy.OtherStr = splitBuff[1][2];
+				SetPolicyOption();
+				Setup?.Policy?.Invoke(m_DdPolicy.options.FindIndex(o => o.text == Policy.ToString()));
+
+				Personality.Type = ExEnum.GetEnumIter<Personality.Type_e>().Where(a => a.GetText() == splitBuff[1][3]).FirstOrDefault(Personality.Type_e.Other);
+				if (Personality.Type == Personality.Type_e.Other) Personality.OtherStr = splitBuff[1][3];
+				SetPersonalityOption();
+				Setup?.Personality?.Invoke(m_DdPersonality.options.FindIndex(o => o.text == Personality.ToString()));
+
+				Sex = ExEnum.GetEnumIter<Sex_e>().Where(a => a.GetText().Remove("性") == splitBuff[1][4]).FirstOrDefault(Sex_e.Other);
+
+				for (int i = 0; i < 5; i++)
+				{
+					sbyte buff;
+					if (sbyte.TryParse(splitBuff[3][i], out buff))
+						CommandCard[(CommandCard_e)(1 << i)].Hit = buff;
+				}
+				Setup?.CommandCard?.Invoke(CommandCard);
+
+				decimal buffD;
+				if (decimal.TryParse(splitBuff[4].Last(), out buffD))
+					ND = buffD;
+
+				Servant.Characteristic.Clear();
+				splitBuff[5].Skip(3).RemoveRetern("/").ToList().ForEach(s => Servant.Characteristic.Add(s));
+				if (!Servant.Characteristic.Remove("ｴﾇﾏ特攻無効"))
+					Servant.Characteristic.Add("エヌマ・エリシュ");
+				m_CharacteristicSetter.SetupNodes();
+			}
+			else if (_str.StartsWith("ILLUST"))
+			{
+				Illustrator = splitBuff[0][1];
+				CV = splitBuff[1][1];
+			}
+			else if (_str.StartsWith("筋力"))
+			{
+				(new[] { Setup?.RankPhysics, Setup?.RankToughness, Setup?.RankAgility, Setup?.RankMagic, Setup?.RankLuck, Setup?.RankNoblePhantasm })
+					.Select((setup, i) => new { Setup = setup, Rank = Rank.FromString(splitBuff[i / 2][(i % 2) * 2 + 1]) })
+					.ToList()
+					.ForEach(x => x.Setup?.Invoke(x.Rank));
+			}
+			else if (_str.StartsWith("霊基再臨"))
+			{
+				splitBuff = _str.Replace("\t", " ").Remove("\r").Split('\n').Select(x => x.Split(' ').ToList()).ToList();
+				m_MaterialsSetter.AllClear();
+				Servant.SecondComingMaterials.ToList().ForEach(m => m.Clear());
+				int line = 0;
+				for (int i = 0; i < 2; i++)
+				{
+					for (; splitBuff[line][0] != "素材"; line++) ;
+					line++;
+					for (; splitBuff[line][0] != "QP"; line++)
+					{
+						for (int j = 0; j < 2; j++)
+						{
+							string strMat = splitBuff[line][j * 2];
+							if (strMat != "")
+								Servant.SecondComingMaterials[(i * 2) + j][strMat.GetEnumByText<Material_e>()] = int.Parse(splitBuff[line][j * 2 + 1]);
+						}
+					}
+				}
+				m_MaterialsSetter?.Setup(Servant?.SecondComingMaterials, Servant?.SkillMaterials);
+			}
+			else if (_str.StartsWith("レベル"))
+			{
+
+				splitBuff = _str.Replace("\t", " ").Remove("\r").Split('\n').Select(x => x.Split(' ').ToList()).ToList();
+				m_MaterialsSetter.AllClear();
+				Servant.SkillMaterials.ToList().ForEach(m => m.Clear());
+				int line = 0;
+				for (; splitBuff[line][0] != "1"; line++) ;
+				line++;
+				for (int step = -1; step < 8; line++)
+				{
+					string str = "";
+					if (char.IsNumber(splitBuff[line][0][0]))
+					{
+						step++;
+						str = splitBuff[line][2];
+					}
+					else
+						str = splitBuff[line][0];
+					var spStr = str.Split('×');
+					Servant.SkillMaterials[step][spStr[0].GetEnumByText<Material_e>()] = int.Parse(spStr[1]);
+				}
+				m_MaterialsSetter?.Setup(Servant?.SecondComingMaterials, Servant?.SkillMaterials);
+			}
+		}
 	}
 }

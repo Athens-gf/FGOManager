@@ -12,9 +12,6 @@ namespace FGOManager.Register
 {
 	public class CharacteristicSetter : MonoBehaviour
 	{
-		private static readonly string[] Defaults = new string[] { "", "竜", "猛獣", "人型", "人間",
-			"ローマ", "死霊", "悪魔", "魔性", "超巨大", "アルトリア顔", "アーサー", "愛する者", "王", "ギリシャ神話系男性", "人類の脅威" };
-
 		[SerializeField]
 		private CharacteristicNode m_PrefabCharacteristicNode = null;
 		[SerializeField]
@@ -66,7 +63,7 @@ namespace FGOManager.Register
 
 		public void SetupDropdownOptions()
 			=> SetupOpstions?.Invoke(GameData.Instance.Servants.SelectMany(s => s.Characteristic)
-				.ReternAppend(Defaults).Distinct().OrderBy(s => s)
+				.AddRetern(FGOData.DefaultCharacteristics).Distinct().OrderBy(s => s)
 				.Select(s => new Dropdown.OptionData { text = s }).ToList());
 	}
 }

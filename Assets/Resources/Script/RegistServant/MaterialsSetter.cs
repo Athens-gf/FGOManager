@@ -58,6 +58,10 @@ namespace FGOManager.Register
 		public void RemoveNode(bool _isSC, int _step, Material_e _material) => (_isSC ? m_MD_SeccondComming : m_MD_Skill)[_step].RemoveNode(_material);
 
 		public void RemoveNode()
-			=> m_ToggleGroup.ActiveToggles().FirstOrDefault()?.transform.parent?.GetComponent<MaterialsDisplay>()?.RemoveNode(MaterialIndex[m_Dropdown.value]);
+			=> m_ToggleGroup.ActiveToggles().FirstOrDefault()?.transform.parent
+			?.GetComponent<MaterialsDisplay>()?.RemoveNode();
+
+		public void Clear(bool _isSC) => (_isSC ? m_MD_SeccondComming : m_MD_Skill).ToList().ForEach(md => md.Clear());
+		public void AllClear() => m_MD_SeccondComming.AddRetern(m_MD_Skill).ToList().ForEach(md => md.Clear());
 	}
 }

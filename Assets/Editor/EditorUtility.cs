@@ -11,7 +11,7 @@ namespace KMUtility.Editor
 {
 	public static class ExEditor
 	{
-		public static GUILayoutOption[] AddOption(this GUILayoutOption[] _options, GUILayoutOption _addOption) => _options.ReternAppend(_addOption).ToArray();
+		public static GUILayoutOption[] AddOption(this GUILayoutOption[] _options, GUILayoutOption _addOption) => _options.AddRetern(_addOption).ToArray();
 
 		public static int Popup(string _label, int _select, string[] _display, int _width, params GUILayoutOption[] _options)
 			=> EditorGUILayout.Popup(_label, _select, _display, _options.AddOption(GUILayout.Width(_width)));

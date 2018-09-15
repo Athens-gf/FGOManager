@@ -5,6 +5,7 @@ using KMUtility;
 using KMUtility.Unity;
 using System.IO;
 using UnityEngine;
+using KMUtility.Json;
 
 namespace FGOManager
 {
@@ -70,7 +71,7 @@ namespace FGOManager
 			.ToDictionary(mi => $"{getPrefix(type)}{mi.Index:D2}", mi => mi.Mat)));
 			m_MaterialSprites = new MaterialSpriteDictionary();
 			m_MaterialSprites.Table = Resources.LoadAll<Sprite>("Texture/Materials0")
-				.ReternAppend(Resources.LoadAll<Sprite>("Texture/Materials1"))
+				.AddRetern(Resources.LoadAll<Sprite>("Texture/Materials1"))
 				.ToDictionary(s => dicMat[s.name], s => s);
 		}
 
@@ -92,8 +93,8 @@ namespace FGOManager
 			// サーヴァントデータ読み込み
 			if (File.Exists(SavePath))
 			{
-				List<string> savePath = SaveJsonPng.LoadList<string>(SavePath);
-				savePath.ForEach(path => Servants.AddRange(SaveJsonPng.LoadList<ServantBase>(path)));
+				List<string> savePath = SaveJsonPng.Load<List<string>>(SavePath);
+				savePath.ForEach(path => Servants.AddRange(SaveJsonPng.Load<List<ServantBase>>(path)));
 				Servants = Servants.OrderBy(s => s.No).ToList();
 			}
 
@@ -104,5 +105,4 @@ namespace FGOManager
 		{
 		}
 	}
-
 }
