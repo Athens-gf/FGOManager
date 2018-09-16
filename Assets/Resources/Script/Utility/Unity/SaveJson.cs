@@ -6,7 +6,7 @@ using KMUtility.Json;
 
 namespace KMUtility.Unity
 {
-	public static class SaveJsonPng
+	public static class SaveJson
 	{
 		/// <summary> Png画像をの読み込み </summary>
 		/// <param name="_path">読み込む画像のパス</param>
@@ -117,10 +117,21 @@ namespace KMUtility.Unity
 		/// <summary> オブジェクトをJSON形式に変換し、そのJSON文字列をPng画像として保存する </summary>
 		/// <param name="_path">保存先のパス</param>
 		/// <param name="_object">保存するオブジェクト</param>
-		public static void Save<T>(string _path, T _object) => SavePng(_path, JsonToTexture(KMJson.ToJson(_object)));
+		public static void SaveJsonPng<T>(string _path, T _object) => SavePng(_path, JsonToTexture(KMJson.ToJson(_object)));
 
 		/// <summary> Png画像画像からオブジェクトデータを読み出す </summary>
 		/// <param name="_path">保存先のパス</param>
-		public static T Load<T>(string _path) => KMJson.FromJson<T>(TextureToJson(ReadPng(_path)));
+		public static T LoadJsonPng<T>(string _path) => KMJson.FromJson<T>(TextureToJson(ReadPng(_path)));
+
+		/// <summary> Resoucesフォルダのテキストからオブジェクトデータを読み出す </summary>
+		/// <param name="_path">保存先のパス</param>
+		public static T LoadJson<T>(string _path)
+		{
+			string text = (Resources.Load(_path) as TextAsset)?.text;
+			if (text != null)
+				return KMJson.FromJson<T>(text ?? "");
+			else
+				throw new FileNotFoundException($"File not found :{_path}");
+		}
 	}
 }

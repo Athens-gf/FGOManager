@@ -159,11 +159,11 @@ namespace FGOManager.Register
 					string filePath = $"Data/sev{i}.png";
 					if (saveSev.Any())
 					{
-						SaveJsonPng.Save(filePath, saveSev);
+						SaveJson.SaveJsonPng(filePath, saveSev);
 						filePaths.Add(filePath);
 					}
 				}
-				SaveJsonPng.Save(GameData.SavePath, filePaths);
+				SaveJson.SaveJsonPng(GameData.SavePath, filePaths);
 			}
 		}
 

@@ -93,8 +93,8 @@ namespace FGOManager
 			// サーヴァントデータ読み込み
 			if (File.Exists(SavePath))
 			{
-				List<string> savePath = SaveJsonPng.Load<List<string>>(SavePath);
-				savePath.ForEach(path => Servants.AddRange(SaveJsonPng.Load<List<ServantBase>>(path)));
+				List<string> savePath = SaveJson.LoadJsonPng<List<string>>(SavePath);
+				savePath.ForEach(path => Servants.AddRange(SaveJson.LoadJsonPng<List<ServantBase>>(path)));
 				Servants = Servants.OrderBy(s => s.No).ToList();
 			}
 
