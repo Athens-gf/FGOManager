@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace KMUtility.Editor
+namespace AthensUtility.Editor
 {
 	public static class ExEditor
 	{

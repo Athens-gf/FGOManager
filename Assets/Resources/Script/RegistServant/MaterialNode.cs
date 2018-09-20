@@ -2,8 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
-using KMUtility.Unity;
-using KMUtility.Unity.UI;
+using AthensUtility.Unity;
+using AthensUtility.Unity.UI;
 
 namespace FGOManager.Register
 {

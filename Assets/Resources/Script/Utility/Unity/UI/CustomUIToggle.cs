@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace KMUtility.Unity.UI
+namespace AthensUtility.Unity.UI
 {
 	[RequireComponent(typeof(Toggle))]
 	public class CustomUIToggle : CustomUI

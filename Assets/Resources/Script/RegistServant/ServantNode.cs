@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine.UI;
-using KMUtility.Unity.UI;
+using AthensUtility.Unity.UI;
 
 namespace FGOManager.Register
 {

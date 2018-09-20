@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using KMUtility;
+using AthensUtility;
 using System;
 
 namespace FGOManager.Register

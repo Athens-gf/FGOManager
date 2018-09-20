@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using KMUtility;
+using AthensUtility;
 using System.Runtime.Serialization;
 
 namespace FGOManager
@@ -73,13 +73,58 @@ namespace FGOManager
 	[KnownType(typeof(EffAttack))]
 	[KnownType(typeof(EffUpDown))]
 	[KnownType(typeof(EffUDCard))]
-	[KnownType(typeof(EffSpecialAttack))]
+	[KnownType(typeof(EffEnchant))]
+	[KnownType(typeof(EffEncChangeClassCompatibility))]
+	[KnownType(typeof(EffEncAddCharacteristic))]
+	[KnownType(typeof(EffEncState))]
+	[KnownType(typeof(EffImmediate))]
 	[DataContract]
 	public abstract class Effect
 	{
 		[DataMember] private sbyte m_Times = 0;
 		[DataMember] private sbyte m_Turn = 0;
 		[DataMember] private decimal m_ActivationRate = -1;
+
+		public enum DetailType_e
+		{
+			None = 0,
+			/// <summary> 強化 </summary>
+			[EnumText("強化")] Buff = 100,
+			/// <summary> 攻撃 </summary>
+			[EnumText("攻撃")] Attack,
+			/// <summary> 防御 </summary>
+			[EnumText("防御")] Defense,
+			/// <summary> 回避 </summary>
+			[EnumText("回避")] Avoidance,
+			/// <summary> 無敵 </summary>
+			[EnumText("無敵")] Invincible,
+
+			/// <summary> 弱体 </summary>
+			[EnumText("弱体")] Debuff = 200,
+			/// <summary> 精神異常 </summary>
+			[EnumText("精神異常")] MentalAbnormality,
+			/// <summary> 即死 </summary>
+			[EnumText("即死")] InstantDeath,
+
+			SlipDamage,
+			/// <summary> やけど </summary>
+			[EnumText("やけど")] SD_Burn,
+			/// <summary> 毒 </summary>
+			[EnumText("毒")] SD_Poison,
+			/// <summary> 呪い </summary>
+			[EnumText("呪い")] SD_Curse,
+
+			/// <summary> 行動不能 </summary>
+			[EnumText("行動不能")] Inactivity,
+			/// <summary> スタン </summary>
+			[EnumText("スタン")] Stan,
+			/// <summary> 魅了 </summary>
+			[EnumText("魅了")] Charm,
+			/// <summary> 豚化 </summary>
+			[EnumText("豚化")] Pig,
+
+
+		}
 
 		public enum Type_e
 		{
@@ -118,24 +163,8 @@ namespace FGOManager
 			[EnumText("最大HP")] UD_MaxHP,
 			/// <summary> 成功率 </summary>
 			[EnumText("成功率")] UD_SuccessRate,
-			/*
-			/// <summary> 弱体系付与成功率 </summary>
-			[EnumText("弱体系付与成功率")] UD_SuccessRateDebuff,
-			/// <summary> 精神異常付与成功率 </summary>
-			[EnumText("精神異常付与成功率")] UD_SuccessRateMentalAbnormality,
-			/// <summary> 即死付与成功率 </summary>
-			[EnumText("即死付与成功率")] UD_SuccessRateInstantDeath,
-			*/
-			/// <summary> 弱体耐性 </summary>
-			[EnumText("弱体耐性")] UD_Resistance,
-			/*
-			/// <summary> 精神異常耐性 </summary>
-			[EnumText("精神異常耐性")] UD_ResistanceMentalAbnormality,
-			/// <summary> 毒耐性 </summary>
-			[EnumText("毒耐性")] UD_ResistancePoison,
-			/// <summary> 強化解除耐性 </summary>
-			[EnumText("強化解除耐性")] UD_ResistanceCancelBuff,
-			*/
+			/// <summary> 耐性 </summary>
+			[EnumText("耐性")] UD_Resistance,
 
 			// 付与系
 			ENC = 200,
@@ -155,54 +184,14 @@ namespace FGOManager
 			[EnumText("毎ターンNP獲得")] ENC_EveryTurnGetNP,
 			/// <summary> 毎ターンHP回復 </summary>
 			[EnumText("毎ターンHP回復")] ENC_EveryTurnRecoveryHP,
-			/// <summary> 強化無効 </summary>
-			[EnumText("強化無効")] ENC_DisabledBuff,
-			/// <summary> 弱体無効 </summary>
-			[EnumText("弱体無効")] ENC_DisabledDebuff,
-			/// <summary> 即死無効 </summary>
-			[EnumText("即死無効")] ENC_DisabledInstantDeath,
 			/// <summary> ガッツ </summary>
 			[EnumText("ガッツ")] ENC_Guts,
 			/// <summary> ターゲット集中 </summary>
 			[EnumText("ターゲット集中")] ENC_TargetConcentration,
-			/// <summary> 回避 </summary>
-			[EnumText("回避")] ENC_Avoidance,
-			/// <summary> 無敵 </summary>
-			[EnumText("無敵")] ENC_Invincible,
-			/// <summary> 防御無視 </summary>
-			[EnumText("防御無視")] ENC_IgnoredDefense,
-			/// <summary> 必中 </summary>
-			[EnumText("必中")] ENC_AbsoluteHit,
-			/// <summary> 無敵貫通 </summary>
-			[EnumText("無敵貫通")] ENC_ThroughInvincible,
 			/// <summary> クラス相性変更 </summary>
 			[EnumText("クラス相性変更")] ENC_ChangeClassCompatibility,
 			/// <summary> 宝具チャージ段階引き上げ </summary>
 			[EnumText("宝具チャージ段階引き上げ")] ENC_AddOverCharge,
-			/// <summary> 行動不能 </summary>
-			[EnumText("行動不能")] ENC_Inactivity,
-			/// <summary> スタン </summary>
-			[EnumText("スタン")] ENC_Stan,
-			/// <summary> 魅了 </summary>
-			[EnumText("魅了")] ENC_Charm,
-			/// <summary> 恐怖 </summary>
-			[EnumText("恐怖")] ENC_Fear,
-			/// <summary> 混乱 </summary>
-			[EnumText("混乱")] ENC_Confusion,
-			/// <summary> 帯電 </summary>
-			[EnumText("帯電")] ENC_Charging,
-			/// <summary> やけど </summary>
-			[EnumText("やけど")] ENC_Burn,
-			/// <summary> 延焼 </summary>
-			[EnumText("延焼")] ENC_SpreadingFire,
-			/// <summary> 毒 </summary>
-			[EnumText("毒")] ENC_Poison,
-			/// <summary> 蝕毒 </summary>
-			[EnumText("蝕毒")] ENC_Erosion,
-			/// <summary> 呪い </summary>
-			[EnumText("呪い")] ENC_Curse,
-			/// <summary> 呪厄 </summary>
-			[EnumText("呪厄")] ENC_Disaster,
 			/// <summary> 宝具封印 </summary>
 			[EnumText("宝具封印")] ENC_SealNoblePhantasm,
 			/// <summary> スキル封印 </summary>
@@ -214,6 +203,27 @@ namespace FGOManager
 			/// <summary> 名前だけの状態付与 </summary>
 			[EnumText("名前だけの状態付与")] ENC_State,
 
+			/// <summary> 恐怖 </summary>
+			[EnumText("恐怖")] ENC_Fear,
+			/// <summary> 混乱 </summary>
+			[EnumText("混乱")] ENC_Confusion,
+			/// <summary> 帯電 </summary>
+			[EnumText("帯電")] ENC_Charging,
+
+			/// <summary> ダメージ無効化 </summary>
+			[EnumText("ダメージ無効化")] ENC_Invalid,
+			/// <summary> 無視 </summary>
+			[EnumText("防御無視")] ENC_Ignored,
+			/// <summary> 無効 </summary>
+			[EnumText("無効")] ENC_Disabled,
+			/// <summary> 行動不能 </summary>
+			[EnumText("行動不能")] ENC_Inactivity,
+			/// <summary> 持続ダメージ </summary>
+			[EnumText("持続ダメージ")] ENC_SlipDamage,
+			/// <summary> 持続ダメージ増強 </summary>
+			[EnumText("持続ダメージ増強")] ENC_DoubledSlipDamage,
+
+
 			// 即時発動系
 			IMM = 300,
 			/// <summary> スター獲得 </summary>
@@ -224,22 +234,8 @@ namespace FGOManager
 			[EnumText("HP回復")] IMM_RecoveryHP,
 			/// <summary> 強化解除 </summary>
 			[EnumText("強化解除")] IMM_CanselBuff,
-			/*
-			/// <summary> 攻撃強化解除 </summary>
-			[EnumText("攻撃強化解除")] IMM_CanselAttackBuff,
-			/// <summary> 回避解除 </summary>
-			[EnumText("回避解除")] IMM_CanselAvoidance,
-			/// <summary> 無敵解除 </summary>
-			[EnumText("無敵解除")] IMM_CanselInvincible,
-			*/
 			/// <summary> 弱体解除 </summary>
 			[EnumText("弱体解除")] IMM_ReleaseDebuff,
-			/*
-			/// <summary> 精神異常状態解除 </summary>
-			[EnumText("精神異常状態解除")] IMM_ReleaseMentalAbnormality,
-			/// <summary> 毒状態解除 </summary>
-			[EnumText("毒状態解除")] IMM_ReleasePoison,
-			*/
 			/// <summary> 宝具チャージ上昇 </summary>
 			[EnumText("宝具チャージ上昇")] IMM_AddCharge,
 			/// <summary> 宝具チャージ減少 </summary>
@@ -272,6 +268,8 @@ namespace FGOManager
 
 		/// <summary> 効果の種別 </summary>
 		[DataMember] public Type_e Type { get; set; }
+		/// <summary> 効果の種別詳細 </summary>
+		[DataMember] public DetailType_e DetailType { get; set; } = DetailType_e.None;
 		/// <summary> 効果の範囲 </summary>
 		[DataMember] public Target_e Target { get; set; }
 		/// <summary> 効果の変化量タイプ </summary>
@@ -299,7 +297,200 @@ namespace FGOManager
 		/// <summary> 効果の説明 </summary>
 		[DataMember] public string Description { get; set; } = "";
 
-		public Effect(Type_e _type) { Type = _type; }
+		/// <summary> 精神異常系かどうか </summary>
+		public bool IsMentalAbnormalityType => (Type == Type_e.ENC_Inactivity && DetailType == DetailType_e.Charm) || Type == Type_e.ENC_Fear || Type == Type_e.ENC_Confusion;
+		/// <summary> 攻撃強化系かどうか </summary>
+		public bool IsAttakType
+		{
+			get
+			{
+				switch (Type)
+				{
+					case Type_e.UD_CardBuff:
+					case Type_e.UD_Attack:
+					case Type_e.UD_NoblePhantasmPower:
+					case Type_e.UD_CriticalPower:
+					case Type_e.UD_CriticalIncidence:
+					case Type_e.UD_StarGet:
+					case Type_e.ENC_SpecialAttack:
+					case Type_e.ENC_PlusDamage:
+					case Type_e.ENC_UpHitCount:
+					case Type_e.ENC_Ignored:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
+		/// <summary> 防御強化系かどうか </summary>
+		public bool IsDefencetype
+		{
+			get
+			{
+				switch (Type)
+				{
+					case Type_e.UD_CardResistance:
+					case Type_e.UD_Defense:
+					case Type_e.UD_Resistance:
+					case Type_e.ENC_SpecialDefense:
+					case Type_e.ENC_CutDamage:
+					case Type_e.ENC_Invalid:
+					case Type_e.ENC_Disabled:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
+
+		public Effect(Type_e _type, DetailType_e _detailType = DetailType_e.None) { Type = _type; DetailType = _detailType; }
+
+		protected void CheckDetailType()
+		{
+			switch (Type)
+			{
+				case Type_e.UD_SuccessRate:
+					switch (DetailType)
+					{
+						case DetailType_e.Buff:
+						case DetailType_e.Debuff:
+						case DetailType_e.MentalAbnormality:
+						case DetailType_e.InstantDeath:
+						case DetailType_e.Inactivity:
+						case DetailType_e.Stan:
+						case DetailType_e.Charm:
+						case DetailType_e.Pig:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.UD_Resistance:
+					switch (DetailType)
+					{
+						case DetailType_e.Attack:
+						case DetailType_e.Defense:
+						case DetailType_e.Debuff:
+						case DetailType_e.MentalAbnormality:
+						case DetailType_e.InstantDeath:
+						case DetailType_e.SD_Burn:
+						case DetailType_e.SD_Poison:
+						case DetailType_e.SD_Curse:
+						case DetailType_e.Inactivity:
+						case DetailType_e.Stan:
+						case DetailType_e.Charm:
+						case DetailType_e.Pig:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.ENC_Invalid:
+					if (DetailType != DetailType_e.Avoidance && DetailType != DetailType_e.Invincible)
+						throw new Exception();
+					break;
+				case Type_e.ENC_Ignored:
+					switch (DetailType)
+					{
+						case DetailType_e.Defense:
+						case DetailType_e.Avoidance:
+						case DetailType_e.Invincible:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.ENC_Disabled:
+					switch (DetailType)
+					{
+						case DetailType_e.Buff:
+						case DetailType_e.Debuff:
+						case DetailType_e.MentalAbnormality:
+						case DetailType_e.InstantDeath:
+						case DetailType_e.SlipDamage:
+						case DetailType_e.SD_Burn:
+						case DetailType_e.SD_Poison:
+						case DetailType_e.SD_Curse:
+						case DetailType_e.Inactivity:
+						case DetailType_e.Stan:
+						case DetailType_e.Charm:
+						case DetailType_e.Pig:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.ENC_Inactivity:
+					switch (DetailType)
+					{
+						case DetailType_e.Inactivity:
+						case DetailType_e.Stan:
+						case DetailType_e.Charm:
+						case DetailType_e.Pig:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.ENC_SlipDamage:
+				case Type_e.ENC_DoubledSlipDamage:
+					switch (DetailType)
+					{
+						case DetailType_e.SD_Burn:
+						case DetailType_e.SD_Poison:
+						case DetailType_e.SD_Curse:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.IMM_CanselBuff:
+					switch (DetailType)
+					{
+						case DetailType_e.Buff:
+						case DetailType_e.Attack:
+						case DetailType_e.Defense:
+						case DetailType_e.Avoidance:
+						case DetailType_e.Invincible:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.IMM_ReleaseDebuff:
+					switch (DetailType)
+					{
+						case DetailType_e.Debuff:
+						case DetailType_e.MentalAbnormality:
+						case DetailType_e.SlipDamage:
+						case DetailType_e.SD_Burn:
+						case DetailType_e.SD_Poison:
+						case DetailType_e.SD_Curse:
+						case DetailType_e.Inactivity:
+						case DetailType_e.Stan:
+						case DetailType_e.Charm:
+						case DetailType_e.Pig:
+							break;
+						default:
+							throw new Exception();
+					}
+					break;
+				case Type_e.IMM_AddCharge:
+					break;
+				case Type_e.IMM_DecreaseCharge:
+					break;
+				case Type_e.IMM_HasteSkillCharge:
+					break;
+				case Type_e.IMM_DelaySkillCharge:
+					break;
+				case Type_e.IMM_DamageByRemainingHP:
+					break;
+				default:
+					if (DetailType != DetailType_e.None)
+						throw new Exception();
+					break;
+			}
+		}
 
 		protected void SetupValuesSize()
 		{
@@ -363,7 +554,10 @@ namespace FGOManager
 		/// <summary> 防御無視宝具かどうか </summary>
 		[DataMember] public bool IsIgnoredDefense { get; set; } = false;
 		/// <summary> 特攻宝具かどうか </summary>
-		[DataMember] public EffSpecialAttack SpecialAttack { get; set; } = null;
+		[DataMember] public EffEnchant SpecialAttack { get; set; } = null;
+		/// <summary> 自身のHPが少ないほど威力の高い宝具かどうか </summary>
+		[DataMember] public EffImmediate DamageByRemainingHP { get; set; } = null;
+
 
 		public override bool IsBuff => false;
 
@@ -411,7 +605,40 @@ namespace FGOManager
 		}
 
 		public override string GetDescriptionText()
-			=> $"{Powerful.GetText()}な{(SpecialAttack == null ? "" : $"{SpecialAttack.Fillter}特攻")}{(IsIgnoredDefense ? "防御力無視" : "")}攻撃";
+		{
+			string strRemainingHP = DamageByRemainingHP == null ? "" : "自身のHPが少ないほど威力の高い";
+			string strSpecial = SpecialAttack == null ? "" : $"{SpecialAttack.Fillter}特攻";
+			string strIgnoredDefence = IsIgnoredDefense ? "防御力無視" : "";
+			return $"{strRemainingHP}{Powerful.GetText()}な{strSpecial}{strIgnoredDefence}攻撃";
+		}
+	}
+
+	/// <summary> 即時効果 </summary>
+	[DataContract]
+	public class EffImmediate : Effect
+	{
+		public override bool IsBuff => false;
+		public EffImmediate(Type_e _type, DetailType_e _detailType = DetailType_e.None) : base(_type, _detailType) { }
+
+		public override string GetDescriptionText()
+		{
+			switch (Type)
+			{
+				case Type_e.IMM_GetStar: return $"スターを獲得";
+				case Type_e.IMM_GetNP: return $"NPを増やす";
+				case Type_e.IMM_RecoveryHP: return $"HPを回復";
+				case Type_e.IMM_CanselBuff:
+				case Type_e.IMM_ReleaseDebuff:
+					return $"{DetailType.GetText()}{((DetailType == DetailType_e.Attack || DetailType == DetailType_e.Debuff) ? "強化" : "")}状態を解除";
+				case Type_e.IMM_AddCharge: return $"チャージを1増やす";
+				case Type_e.IMM_DecreaseCharge: return $"チャージを減らす";
+				case Type_e.IMM_HasteSkillCharge: return $"スキルチャージを1進める";
+				case Type_e.IMM_DelaySkillCharge: return $"スキルターン増加";
+				case Type_e.IMM_DamageByRemainingHP: return $"";
+				default:
+					throw new Exception();
+			}
+		}
 	}
 }
 

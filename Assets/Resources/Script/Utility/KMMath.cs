@@ -1,4 +1,4 @@
-﻿namespace KMUtility.Math
+﻿namespace AthensUtility.Math
 {
 	public static class KMMath
 	{

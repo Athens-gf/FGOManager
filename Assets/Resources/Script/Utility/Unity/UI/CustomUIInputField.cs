@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace KMUtility.Unity.UI
+namespace AthensUtility.Unity.UI
 {
 	[RequireComponent(typeof(InputField))]
 	public class CustomUIInputField : CustomUI

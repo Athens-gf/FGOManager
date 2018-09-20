@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Collections;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
 	/// <summary>
 	/// Unity用テーブルの管理クラス

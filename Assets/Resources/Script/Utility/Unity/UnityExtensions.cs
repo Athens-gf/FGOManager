@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
 	[Serializable] public class StringEvent : UnityEvent<string> { }
 	[Serializable] public class IntEvent : UnityEvent<int> { }

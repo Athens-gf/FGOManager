@@ -1,15 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
-	public static class ExKeySet
-	{
-		public static KeySet ToKeySet(this AndOrArrow<KeyCode> _ks)
-			=> new KeySet { Type = _ks.Type, Value = _ks.Value, Children = new List<AndOrArrow<KeyCode>>(_ks.Children) };
-	}
-
 	/// <summary>
 	/// キーの組み合わせを記述できるクラス
 	/// ・演算子
@@ -17,8 +13,12 @@ namespace KMUtility.Unity
 	/// 「 | |：または、いずれかのキーが押されているときに反応する
 	/// 「 + 」：連続、GetKeyDown、GetKeyUpのときに一番最後に結合されたものが押された（離された）ときに他のすべてのキーが押されていれば反応する
 	/// </summary>
-	public class KeySet : AndOrArrow<KeyCode>
+	[DebuggerDisplay("KeySet {ToString()}"), Serializable]
+	public class KeySet : AndOrArrow<KeyCode, KeySet>
 	{
+		private static Dictionary<string, float> TimeStamp { get; } = new Dictionary<string, float>();
+		public override KeyCode ErrorValue => KeyCode.None;
+
 		#region 予約
 		public static KeySet None => (KeySet)KeyCode.None;
 		public static KeySet Backspace => (KeySet)KeyCode.Backspace;
@@ -50,36 +50,40 @@ namespace KMUtility.Unity
 			| KeyCode.F6 | KeyCode.F7 | KeyCode.F8 | KeyCode.F9 | KeyCode.F10
 			| KeyCode.F11 | KeyCode.F12 | KeyCode.F13 | KeyCode.F14 | KeyCode.F15;
 		public static KeySet MouseButton => (KeySet)KeyCode.Mouse0 | KeyCode.Mouse1 | KeyCode.Mouse2 | KeyCode.Mouse3 | KeyCode.Mouse4 | KeyCode.Mouse5 | KeyCode.Mouse6;
+
 		#endregion
 
 		#region operator
-		public static explicit operator KeySet(KeyCode _k) => CreateOne(_k).ToKeySet();
+		public static explicit operator KeySet(KeyCode _code) => new KeySet(_code);
 
-		public static KeySet operator &(KeySet _k0, KeySet _k1) => Append(_k0, _k1, Type_e.And).ToKeySet();
-		public static KeySet operator &(KeySet _k0, KeyCode _k1) => Append(_k0, CreateOne(_k1), Type_e.And).ToKeySet();
-		public static KeySet operator &(KeyCode _k0, KeySet _k1) => Append(CreateOne(_k0), _k1, Type_e.And).ToKeySet();
+		public static KeySet operator &(KeySet _k0, KeySet _k1) => _k0.Append(_k1, Type_e.And);
+		public static KeySet operator &(KeySet _k0, KeyCode _k1) => _k0 & (KeySet)_k1;
+		public static KeySet operator &(KeyCode _k0, KeySet _k1) => (KeySet)_k0 & _k1;
 
-		public static KeySet operator |(KeySet _k0, KeySet _k1) => Append(_k0, _k1, Type_e.Or).ToKeySet();
-		public static KeySet operator |(KeySet _k0, KeyCode _k1) => Append(_k0, CreateOne(_k1), Type_e.Or).ToKeySet();
-		public static KeySet operator |(KeyCode _k0, KeySet _k1) => Append(CreateOne(_k0), _k1, Type_e.Or).ToKeySet();
+		public static KeySet operator |(KeySet _k0, KeySet _k1) => _k0.Append(_k1, Type_e.Or);
+		public static KeySet operator |(KeySet _k0, KeyCode _k1) => _k0 | (KeySet)_k1;
+		public static KeySet operator |(KeyCode _k0, KeySet _k1) => (KeySet)_k0 | _k1;
 
-		public static KeySet operator +(KeySet _k0, KeySet _k1) => Append(_k0, _k1, Type_e.Arrow).ToKeySet();
-		public static KeySet operator +(KeySet _k0, KeyCode _k1) => Append(_k0, CreateOne(_k1), Type_e.Arrow).ToKeySet();
-		public static KeySet operator +(KeyCode _k0, KeySet _k1) => Append(CreateOne(_k0), _k1, Type_e.Arrow).ToKeySet();
+		public static KeySet operator +(KeySet _k0, KeySet _k1) => _k0.Append(_k1, Type_e.Arrow);
+		public static KeySet operator +(KeySet _k0, KeyCode _k1) => _k0 + (KeySet)_k1;
+		public static KeySet operator +(KeyCode _k0, KeySet _k1) => (KeySet)_k0 + _k1;
 		#endregion
+
+		public KeySet() : base() { }
+		public KeySet(KeyCode _value) : base(_value) { }
 
 		public static KeySet GetAnd(params KeyCode[] _keys)
 		{
-			var ks = new AndOrArrow<KeyCode>();
+			var ks = new KeySet();
 			_keys.ToList().ForEach(key => ks &= key);
-			return ks.ToKeySet();
+			return ks;
 		}
 
 		public static KeySet GetOr(params KeyCode[] _keys)
 		{
-			var ks = new AndOrArrow<KeyCode>();
+			var ks = new KeySet();
 			_keys.ToList().ForEach(key => ks |= key);
-			return ks.ToKeySet();
+			return ks;
 		}
 
 		/// <summary> キーセットが押されている間Trueを返す </summary>
@@ -92,11 +96,11 @@ namespace KMUtility.Unity
 				case Type_e.And:
 				case Type_e.Arrow:
 					bool flag = true;
-					Children.ForEach(ks => flag = flag && ks.ToKeySet().GetKey());
+					Children.ToList().ForEach(ks => flag = flag && ks.GetKey());
 					return flag;
 				case Type_e.Or:
 					foreach (var ks in Children)
-						if (ks.ToKeySet().GetKey())
+						if (ks.GetKey())
 							return true;
 					return false;
 				default:
@@ -114,23 +118,23 @@ namespace KMUtility.Unity
 				case Type_e.And:
 					foreach (var ks0 in Children)
 					{
-						bool flag = ks0.ToKeySet().GetKeyDown();
+						bool flag = ks0.GetKeyDown();
 						if (flag)
 						{
-							Children.Where(ks => ks != ks0).ToList().ForEach(ks1 => flag = flag && ks1.ToKeySet().GetKey());
+							Children.Where(ks => ks != ks0).ToList().ForEach(ks1 => flag = flag && ks1.GetKey());
 							if (flag) return true;
 						}
 					}
 					return false;
 				case Type_e.Or:
 					foreach (var ks in Children)
-						if (ks.ToKeySet().GetKeyDown())
+						if (ks.GetKeyDown())
 							return true;
 					return false;
 				case Type_e.Arrow:
 					bool flag1 = true;
-					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.ToKeySet().GetKey());
-					return flag1 && Children.Last().ToKeySet().GetKeyDown();
+					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.GetKey());
+					return flag1 && Children.Last().GetKeyDown();
 				default:
 					return false;
 			}
@@ -146,26 +150,44 @@ namespace KMUtility.Unity
 				case Type_e.And:
 					foreach (var ks0 in Children)
 					{
-						bool flag = ks0.ToKeySet().GetKeyUp();
+						bool flag = ks0.GetKeyUp();
 						if (flag)
 						{
-							Children.Where(ks => ks != ks0).ToList().ForEach(ks => flag = flag && ks.ToKeySet().GetKey());
+							Children.Where(ks => ks != ks0).ToList().ForEach(ks => flag = flag && ks.GetKey());
 							if (flag) return true;
 						}
 					}
 					return false;
 				case Type_e.Or:
 					foreach (var ks in Children)
-						if (ks.ToKeySet().GetKeyUp())
+						if (ks.GetKeyUp())
 							return true;
 					return false;
 				case Type_e.Arrow:
 					bool flag1 = true;
-					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.ToKeySet().GetKey());
-					return flag1 && Children.Last().ToKeySet().GetKeyUp();
+					Children.Where(ks => ks != Children.Last()).ToList().ForEach(ks => flag1 = flag1 && ks.GetKey());
+					return flag1 && Children.Last().GetKeyUp();
 				default:
 					return false;
 			}
+		}
+
+		public bool GetKeyInterval(float _time)
+		{
+			string key = ToString();
+			if (!TimeStamp.ContainsKey(key)) TimeStamp[key] = 0;
+			if (GetKey())
+			{
+				TimeStamp[key] += Time.deltaTime;
+				if (TimeStamp[key] > _time)
+				{
+					TimeStamp[key] = 0;
+					return true;
+				}
+				return false;
+			}
+			TimeStamp[key] = 0;
+			return false;
 		}
 
 		/// <summary> 排他的なキーセットの中のどれが満たされたかをインデックスを返す
@@ -191,7 +213,7 @@ namespace KMUtility.Unity
 		/// <summary> Orをキーセットの配列に変更する </summary>
 		public KeySet[] DivideOr()
 		{
-			if (Type == Type_e.Or) return Children.Select(ks => ks.ToKeySet()).ToArray();
+			if (Type == Type_e.Or) return Children.Select(ks => ks).ToArray();
 			return new KeySet[] { this };
 		}
 	}

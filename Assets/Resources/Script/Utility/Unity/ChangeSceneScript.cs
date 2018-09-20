@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
 	/// <summary>
 	/// シーン変更用スクリプト

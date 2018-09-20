@@ -2,8 +2,8 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using KMUtility.Unity;
-using KMUtility.Unity.UI;
+using AthensUtility.Unity;
+using AthensUtility.Unity.UI;
 
 namespace FGOManager.Register
 {
@@ -84,7 +84,7 @@ namespace FGOManager.Register
 		public void ChangeQ()
 		{
 			m_DpA.Dropdown.ClearOptions();
-			m_DpA.Dropdown.AddOptions(Enumerable.Range(0, 3 - Q).Select(i => (i + 1).ToString()).ToList());
+			m_DpA.Dropdown.AddOptions(Enumerable.Range(1, 3 - Q).Select(i => i.ToString()).ToList());
 			m_TextB.text = (B + 1).ToString();
 			CommandCard.Type = CommandCardType;
 			OnValueChanged?.Invoke(CommandCard);
@@ -93,7 +93,7 @@ namespace FGOManager.Register
 		public void ChangeA()
 		{
 			m_DpQ.Dropdown.ClearOptions();
-			m_DpQ.Dropdown.AddOptions(Enumerable.Range(0, 3 - A).Select(i => (i + 1).ToString()).ToList());
+			m_DpQ.Dropdown.AddOptions(Enumerable.Range(1, 3 - A).Select(i => i.ToString()).ToList());
 			m_TextB.text = (B + 1).ToString();
 			CommandCard.Type = CommandCardType;
 			OnValueChanged?.Invoke(CommandCard);

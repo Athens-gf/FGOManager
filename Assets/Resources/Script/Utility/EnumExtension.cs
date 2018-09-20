@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KMUtility
+namespace AthensUtility
 {
 	/// <summary> Enumに文字情報を付与したいときに記述する． </summary>
 	[AttributeUsage(AttributeTargets.Field)]

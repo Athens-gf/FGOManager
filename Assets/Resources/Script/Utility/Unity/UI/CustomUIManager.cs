@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace KMUtility.Unity.UI
+namespace AthensUtility.Unity.UI
 {
 	public class CustomUIManager : SingletonMonoBehaviour<CustomUIManager>
 	{

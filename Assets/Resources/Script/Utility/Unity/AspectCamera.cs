@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
 	[ExecuteInEditMode, RequireComponent(typeof(Camera))]
 	public class AspectCamera : MonoBehaviour

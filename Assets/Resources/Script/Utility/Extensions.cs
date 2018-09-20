@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace KMUtility
+namespace AthensUtility
 {
 	public static class Extensions
 	{
@@ -52,6 +52,13 @@ namespace KMUtility
 
 	public static class ExIEnumerable
 	{
+		/// <summary> _startから始まり_stepずつ増える_count個のint型配列を返す </summary>
+		/// <param name="_count">要素数</param>
+		/// <param name="_start">初期値</param>
+		/// <param name="_step">増えていく数</param>
+		/// <returns></returns>
+		public static IEnumerable<int> Range(int _count, int _start = 0, int _step = 1) => Enumerable.Range(0, _count).Select(i => _start + (i * _step));
+
 		/// <summary> コンテナに1つ要素を追加したものを返す </summary>
 		/// <returns>追加後のコンテナ</returns>
 		/// <param name="_iter">追加されるコンテナ</param>

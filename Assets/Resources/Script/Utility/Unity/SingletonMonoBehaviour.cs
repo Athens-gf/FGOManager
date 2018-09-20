@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace KMUtility.Unity
+namespace AthensUtility.Unity
 {
 	/// <summary>
 	/// シングルトン抽象クラス

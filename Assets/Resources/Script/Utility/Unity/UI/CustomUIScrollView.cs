@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace KMUtility.Unity.UI
+namespace AthensUtility.Unity.UI
 {
 	[RequireComponent(typeof(ScrollRect))]
 	public class CustomUIScrollView : CustomUI

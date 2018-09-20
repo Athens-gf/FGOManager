@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using KMUtility;
-using KMUtility.Unity;
+using AthensUtility;
+using AthensUtility.Unity;
 using System.IO;
 using UnityEngine;
-using KMUtility.Json;
+using AthensUtility.Json;
 
 namespace FGOManager
 {
@@ -36,8 +36,10 @@ namespace FGOManager
 			m_ClassSprites = new ClassSpriteDictionary();
 			Dictionary<string, Class_e> dicClass = ExEnum.GetEnumIter<Class_e>().Where(c => c <= Class_e.Foreigner)
 				.Select((c, i) => new { Class = c, Index = i }).ToDictionary(ci => $"Class_{ci.Index}", ci => ci.Class);
-			m_ClassSprites = new ClassSpriteDictionary();
-			m_ClassSprites.Table = Resources.LoadAll<Sprite>("Texture/Class").ToDictionary(s => dicClass[s.name], s => s);
+			m_ClassSprites = new ClassSpriteDictionary
+			{
+				Table = Resources.LoadAll<Sprite>("Texture/Class").ToDictionary(s => dicClass[s.name], s => s)
+			};
 
 			Func<MaterialType_e, string> getPrefix = type =>
 			{
@@ -97,7 +99,6 @@ namespace FGOManager
 				savePath.ForEach(path => Servants.AddRange(SaveJson.LoadJsonPng<List<ServantBase>>(path)));
 				Servants = Servants.OrderBy(s => s.No).ToList();
 			}
-
 			return;
 		}
 

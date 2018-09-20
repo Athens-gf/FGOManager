@@ -3,8 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using KMUtility;
-using KMUtility.Math;
+using AthensUtility;
+using AthensUtility.Math;
 using System.Runtime.Serialization;
 
 namespace FGOManager
@@ -259,6 +259,9 @@ namespace FGOManager
 		/// <summary> 強化後効果 </summary>
 		[DataMember] public List<Effect> EnhancedEffects { get; private set; } = new List<Effect>();
 
+		/// <summary> 種類分けタグ </summary>
+		[DataMember] public List<string> Tags { get; private set; } = new List<string>();
+
 		public override string ToString() => Name;
 
 
@@ -282,6 +285,9 @@ namespace FGOManager
 
 		/// <summary> 効果 </summary>
 		[DataMember] public List<Effect> Effects { get; private set; } = new List<Effect>();
+
+		/// <summary> 種類分けタグ </summary>
+		[DataMember] public List<string> Tags { get; private set; } = new List<string>();
 	}
 	#endregion
 

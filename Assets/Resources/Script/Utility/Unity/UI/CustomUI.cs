@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace KMUtility.Unity.UI
+namespace AthensUtility.Unity.UI
 {
 	[RequireComponent(typeof(Shadow)), RequireComponent(typeof(Selectable))]
 	public class CustomUI : MonoBehaviour

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace KMUtility.Unity.Page
+namespace AthensUtility.Unity.Page
 {
 	public abstract class PageBase : MonoBehaviour
 	{
